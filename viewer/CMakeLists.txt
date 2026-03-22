@@ -19,28 +19,29 @@ file(GLOB_RECURSE demo_headers
 )
 
 # Create viewer executable (include headers for IDE)
-add_executable(linear_viewer 
+add_executable(cagd_viewer 
     ${viewer_sources} 
     ${viewer_headers}
     ${demo_sources}
     ${demo_headers}
 )
 
-# Link with libraries
-target_link_libraries(linear_viewer PRIVATE
-    linear_lib
-    imgui_lib
+# Link with libraries from vcpkg
+target_link_libraries(cagd_viewer PRIVATE
+    cagd_core
+    imgui::imgui
+    glfw
     OpenGL::GL
 )
 
 # Set include directories
-target_include_directories(linear_viewer PRIVATE
+target_include_directories(cagd_viewer PRIVATE
     ${CMAKE_SOURCE_DIR}/src
 )
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(linear_viewer PRIVATE /W4)
+    target_compile_options(cagd_viewer PRIVATE /W4)
 else()
-    target_compile_options(linear_viewer PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(cagd_viewer PRIVATE -Wall -Wextra -Wpedantic)
 endif()

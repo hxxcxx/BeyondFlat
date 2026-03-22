@@ -1,28 +1,31 @@
-# Linear algebra library CMakeLists.txt
+# CAGD core library CMakeLists.txt
 
 # Collect all source files
-file(GLOB_RECURSE linear_sources
+file(GLOB_RECURSE cagd_sources
     "*.cc"
 )
 
-file(GLOB_RECURSE linear_headers
+file(GLOB_RECURSE cagd_headers
     "*.h"
 )
 
-# Create linear algebra library (include headers for IDE)
-add_library(linear_lib 
-    ${linear_sources}
-    ${linear_headers}
+# Create CAGD core library (include headers for IDE)
+add_library(cagd_core 
+    ${cagd_sources}
+    ${cagd_headers}
 )
 
 # Set include directories
-target_include_directories(linear_lib PUBLIC
+target_include_directories(cagd_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Link with Eigen from vcpkg
+target_link_libraries(cagd_core PUBLIC Eigen3::Eigen)
+
 # Compiler warnings
 if(MSVC)
-    target_compile_options(linear_lib PRIVATE /W4)
+    target_compile_options(cagd_core PRIVATE /W4)
 else()
-    target_compile_options(linear_lib PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(cagd_core PRIVATE -Wall -Wextra -Wpedantic)
 endif()
