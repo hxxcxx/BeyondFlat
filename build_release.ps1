@@ -1,6 +1,6 @@
-# Build script for BeyondLinear (Release configuration)
+# Build script for BeyondFlat (Release configuration)
 
-Write-Host "Building BeyondLinear (Release)..." -ForegroundColor Green
+Write-Host "Building BeyondFlat (Release)..." -ForegroundColor Green
 
 # Create build directory if it doesn't exist
 if (-not (Test-Path "build")) {

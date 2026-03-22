@@ -1,11 +1,11 @@
-# BeyondLinear
+# BeyondFlat
 
-A linear algebra library and visualization tool, inspired by BeyondConvex.
+A CAGD (Computer Aided Geometric Design) learning project, focusing on curves and surfaces. Companion to BeyondConvex.
 
 ## Project Structure
 
 ```
-BeyondLinear/
+BeyondFlat/
 ├── src/              # Linear algebra library source code
 ├── viewer/           # Visualization viewer
 ├── third_party/      # Third-party dependencies (GLFW, ImGui)

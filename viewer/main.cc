@@ -12,7 +12,7 @@ int main() {
     }
 
     // Create window
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "BeyondLinear Viewer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "BeyondFlat Viewer", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -45,9 +45,9 @@ int main() {
         ImGui::NewFrame();
 
         // Create a simple window
-        ImGui::Begin("BeyondLinear Viewer");
-        ImGui::Text("Welcome to BeyondLinear!");
-        ImGui::Text("Linear algebra visualization library");
+        ImGui::Begin("BeyondFlat Viewer");
+        ImGui::Text("Welcome to BeyondFlat!");
+        ImGui::Text("CAGD curves and surfaces visualization");
         ImGui::End();
 
         // Rendering

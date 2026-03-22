@@ -1,8 +1,8 @@
-#ifndef BEYOND_LINEAR_LINEAR_LIB_H
-#define BEYOND_LINEAR_LINEAR_LIB_H
+#ifndef BEYOND_FLAT_LINEAR_LIB_H
+#define BEYOND_FLAT_LINEAR_LIB_H
 
-// BeyondLinear - Linear Algebra Library
-// This library provides linear algebra operations and data structures
+// BeyondFlat - CAGD Learning Project
+// This library provides geometric operations for curves and surfaces
 
 namespace linear {
 
@@ -17,4 +17,4 @@ namespace linear {
 
 } // namespace linear
 
-#endif // BEYOND_LINEAR_LINEAR_LIB_H
+#endif // BEYOND_FLAT_LINEAR_LIB_H

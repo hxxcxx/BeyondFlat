@@ -1,6 +1,6 @@
-# Build script for BeyondLinear (RelWithDebInfo configuration)
+# Build script for BeyondFlat (RelWithDebInfo configuration)
 
-Write-Host "Building BeyondLinear (RelWithDebInfo)..." -ForegroundColor Green
+Write-Host "Building BeyondFlat (RelWithDebInfo)..." -ForegroundColor Green
 
 # Create build directory if it doesn't exist
 if (-not (Test-Path "build")) {
