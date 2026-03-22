@@ -3,6 +3,24 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
+#include <memory>
+
+#include "app/application.h"
+
+// Global variables
+std::unique_ptr<cagd::Application> g_app;
+int g_screenWidth = 1280;
+int g_screenHeight = 720;
+
+// Framebuffer size callback
+void framebufferSizeCallback(GLFWwindow*, int width, int height) {
+    glViewport(0, 0, width, height);
+    g_screenWidth = width;
+    g_screenHeight = height;
+    if (g_app) {
+        g_app->setScreenSize(width, height);
+    }
+}
 
 int main() {
     // Initialize GLFW
@@ -12,7 +30,7 @@ int main() {
     }
 
     // Create window
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "BeyondFlat Viewer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "BeyondFlat - CAGD Curve Editor", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -21,6 +39,9 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+
+    // Setup callbacks
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -35,6 +56,10 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
+    // Create application
+    g_app = std::make_unique<cagd::Application>();
+    g_app->initialize();
+
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -44,18 +69,15 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Create a simple window
-        ImGui::Begin("BeyondFlat Viewer");
-        ImGui::Text("Welcome to BeyondFlat!");
-        ImGui::Text("CAGD curves and surfaces visualization");
-        ImGui::End();
+        // Render the application
+        g_app->render();
 
         // Rendering
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClearColor(0.1f, 0.1f, 0.15f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -63,6 +85,7 @@ int main() {
     }
 
     // Cleanup
+    g_app.reset();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

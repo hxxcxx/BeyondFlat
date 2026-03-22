@@ -1,29 +1,67 @@
 # Viewer CMakeLists.txt
 
-# Collect viewer source files
-file(GLOB_RECURSE viewer_sources
-    "*.cc"
+# Main viewer source
+set(VIEWER_SOURCES
+    main.cc
 )
 
-file(GLOB_RECURSE viewer_headers
-    "*.h"
+# Application sources
+set(APP_SOURCES
+    app/application.cc
 )
 
-# Collect demo source files
-file(GLOB_RECURSE demo_sources
-    "demos/*.cc"
+set(APP_HEADERS
+    app/application.h
 )
 
-file(GLOB_RECURSE demo_headers
-    "demos/*.h"
+# Base classes
+set(BASE_SOURCES
+    # No base sources yet, only headers
 )
 
-# Create viewer executable (include headers for IDE)
-add_executable(cagd_viewer 
-    ${viewer_sources} 
-    ${viewer_headers}
-    ${demo_sources}
-    ${demo_headers}
+set(BASE_HEADERS
+    base/curve_editor.h
+    base/curve_renderer.h
+)
+
+# Editor sources
+set(EDITOR_SOURCES
+    editors/bezier_editor.cc
+)
+
+set(EDITOR_HEADERS
+    editors/bezier_editor.h
+)
+
+# Renderer sources
+set(RENDER_SOURCES
+    render/bezier_renderer.cc
+)
+
+set(RENDER_HEADERS
+    render/bezier_renderer.h
+)
+
+# Collect all sources
+set(ALL_SOURCES
+    ${VIEWER_SOURCES}
+    ${APP_SOURCES}
+    ${EDITOR_SOURCES}
+    ${RENDER_SOURCES}
+)
+
+# Collect all headers
+set(ALL_HEADERS
+    ${APP_HEADERS}
+    ${BASE_HEADERS}
+    ${EDITOR_HEADERS}
+    ${RENDER_HEADERS}
+)
+
+# Create viewer executable
+add_executable(cagd_viewer
+    ${ALL_SOURCES}
+    ${ALL_HEADERS}
 )
 
 # Link with libraries from vcpkg

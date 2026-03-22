@@ -1,18 +1,40 @@
 # CAGD core library CMakeLists.txt
 
-# Collect all source files
-file(GLOB_RECURSE cagd_sources
-    "*.cc"
+# Common utility sources
+set(COMMON_SOURCES
+    common/common.cc
 )
 
-file(GLOB_RECURSE cagd_headers
-    "*.h"
+set(COMMON_HEADERS
+    cagd_types.h
+    common/common.h
 )
 
-# Create CAGD core library (include headers for IDE)
-add_library(cagd_core 
-    ${cagd_sources}
-    ${cagd_headers}
+# Bezier curve sources
+set(BEZIER_SOURCES
+    bezier/bezier_curve.cc
+)
+
+set(BEZIER_HEADERS
+    bezier/bezier_curve.h
+)
+
+# Collect all sources
+set(CAGD_SOURCES
+    ${COMMON_SOURCES}
+    ${BEZIER_SOURCES}
+)
+
+# Collect all headers
+set(CAGD_HEADERS
+    ${COMMON_HEADERS}
+    ${BEZIER_HEADERS}
+)
+
+# Create CAGD core library
+add_library(cagd_core
+    ${CAGD_SOURCES}
+    ${CAGD_HEADERS}
 )
 
 # Set include directories
