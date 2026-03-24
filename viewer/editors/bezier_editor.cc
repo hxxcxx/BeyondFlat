@@ -74,7 +74,10 @@ void BezierEditor::render() {
 }
 
 void BezierEditor::renderControlPanel() {
-    ImGui::Begin("Bezier Curve Control Panel");
+    ImGui::SetNextWindowPos(ImVec2(0, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(350, 520), ImGuiCond_Always);
+
+    ImGui::Begin("Bezier Curve Control Panel", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
     // Display options
     ImGui::Checkbox("Show Control Points", &showControlPoints_);
@@ -98,47 +101,9 @@ void BezierEditor::renderControlPanel() {
 
     ImGui::Separator();
 
-    // Control point editing
-    ImGui::Text("Control Points:");
+    // Control point count info
     PointVector2d points = curve_->controlPoints();
-
-    for (size_t i = 0; i < points.size(); ++i) {
-        ImGui::PushID(static_cast<int>(i));
-        ImGui::Text("Point %zu: (%.2f, %.2f)", i, points[i].x(), points[i].y());
-
-        // Add sliders for editing
-        float x = static_cast<float>(points[i].x());
-        float y = static_cast<float>(points[i].y());
-
-        if (ImGui::SliderFloat("X", &x, static_cast<float>(worldMinX_), static_cast<float>(worldMaxX_))) {
-            points[i].x() = x;
-            curve_->setControlPoints(points);
-        }
-
-        if (ImGui::SliderFloat("Y", &y, static_cast<float>(worldMinY_), static_cast<float>(worldMaxY_))) {
-            points[i].y() = y;
-            curve_->setControlPoints(points);
-        }
-
-        ImGui::PopID();
-    }
-
-    ImGui::Separator();
-
-    // Add/Remove control points
-    if (ImGui::Button("Add Control Point") && points.size() < 10) {
-        // Add a new point at the end
-        Point2d lastPoint = points.back();
-        points.emplace_back(lastPoint.x() + 20, lastPoint.y());
-        curve_->setControlPoints(points);
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Remove Control Point") && points.size() > 2) {
-        points.pop_back();
-        curve_->setControlPoints(points);
-    }
+    ImGui::Text("Control Points: %zu / 20", points.size());
 
     ImGui::Separator();
 
@@ -272,28 +237,60 @@ void BezierEditor::renderInfoPanel() {
 
     // Instructions
     ImGui::Text("Instructions:");
-    ImGui::BulletText("Drag control points to modify the curve");
+    ImGui::BulletText("Left-click on empty space to add control point");
+    ImGui::BulletText("Left-click and drag to move control points");
+    ImGui::BulletText("Right-click on control point to delete it");
     ImGui::BulletText("Use sliders to fine-tune positions");
     ImGui::BulletText("Toggle visualization options");
 
     ImGui::End();
 }
 
-void BezierEditor::handleMouseButton(int button, int action, int) {
+void BezierEditor::handleMouseButton(int button, int action, int, double xpos, double ypos) {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_PRESS) {
-            // Check if clicking on a control point
-            double xpos, ypos;
-            glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
-
+            // Check if clicking on a control point (using canvas-relative coordinates)
             int foundPoint = findControlPoint(xpos, ypos);
             if (foundPoint >= 0) {
+                // Clicked on existing control point, start dragging
                 selectedControlPoint_ = foundPoint;
                 isDragging_ = true;
+            } else {
+                // Clicked on empty space, add new control point
+                auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
+                Point2d worldPos = bezierRenderer->convertScreenToWorld(xpos, ypos);
+
+                PointVector2d points = curve_->controlPoints();
+
+                // Limit maximum number of control points
+                if (points.size() < 20) {
+                    points.push_back(worldPos);
+                    curve_->setControlPoints(points);
+
+                    // Select the newly added point
+                    selectedControlPoint_ = static_cast<int>(points.size()) - 1;
+                    isDragging_ = true;
+                }
             }
         } else if (action == GLFW_RELEASE) {
             isDragging_ = false;
             selectedControlPoint_ = -1;
+        }
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            // Check if right-clicking on a control point to delete it
+            int foundPoint = findControlPoint(xpos, ypos);
+            if (foundPoint >= 0) {
+                // Delete the control point
+                PointVector2d points = curve_->controlPoints();
+
+                // Keep at least 2 control points
+                if (points.size() > 2) {
+                    points.erase(points.begin() + foundPoint);
+                    curve_->setControlPoints(points);
+                    selectedControlPoint_ = -1;
+                }
+            }
         }
     }
 }

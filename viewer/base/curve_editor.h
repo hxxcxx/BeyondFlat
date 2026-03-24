@@ -27,7 +27,7 @@ public:
     virtual void renderCanvas(const ImVec2& canvasPos) = 0;
 
     // Handle mouse input
-    virtual void handleMouseButton(int button, int action, int mods) = 0;
+    virtual void handleMouseButton(int button, int action, int mods, double xpos, double ypos) = 0;
     virtual void handleMousePosition(double xpos, double ypos) = 0;
 
     // Get editor name

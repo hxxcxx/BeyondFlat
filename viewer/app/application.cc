@@ -40,10 +40,10 @@ void Application::render() {
 }
 
 void Application::renderCurveSelector() {
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(350, 200), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(350, 200), ImGuiCond_Always);
 
-    ImGui::Begin("Curve Selector");
+    ImGui::Begin("Curve Selector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
     ImGui::Text("Select Curve Type:");
     ImGui::Separator();
@@ -67,10 +67,10 @@ void Application::renderCanvas() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 
     // Create canvas window
-    ImGui::SetNextWindowPos(ImVec2(canvasX_, canvasY_), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(canvasWidth_, canvasHeight_), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(350, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(930, 720), ImGuiCond_Always);
 
-    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
     // Get canvas position and size
     ImVec2 canvasPos = ImGui::GetCursorScreenPos();
@@ -86,18 +86,34 @@ void Application::renderCanvas() {
     editors_[currentEditorIndex_]->setScreenSize(canvasWidth_, canvasHeight_);
 
     // Create invisible button for mouse interaction
-    ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft);
+    ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
 
-    // Handle mouse input
-    if (ImGui::IsMouseClicked(0)) {
-        editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
-    } else if (ImGui::IsMouseReleased(0)) {
-        editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
-    }
+    // Check if mouse is hovering over canvas
+    bool isHovered = ImGui::IsItemHovered();
 
-    if (ImGui::IsMouseDragging(0)) {
+    // Only handle mouse input when hovering over canvas
+    if (isHovered) {
+        // Get mouse position relative to canvas
         ImVec2 mousePos = ImGui::GetMousePos();
-        editors_[currentEditorIndex_]->handleMousePosition(mousePos.x - canvasPos.x, mousePos.y - canvasPos.y);
+        double canvasMouseX = mousePos.x - canvasPos.x;
+        double canvasMouseY = mousePos.y - canvasPos.y;
+
+        // Handle mouse input
+        if (ImGui::IsMouseClicked(0)) {
+            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+        } else if (ImGui::IsMouseReleased(0)) {
+            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+        }
+
+        if (ImGui::IsMouseClicked(1)) {
+            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+        } else if (ImGui::IsMouseReleased(1)) {
+            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+        }
+
+        if (ImGui::IsMouseDragging(0)) {
+            editors_[currentEditorIndex_]->handleMousePosition(canvasMouseX, canvasMouseY);
+        }
     }
 
     // Render the curve using ImGui draw list
@@ -109,7 +125,15 @@ void Application::renderCanvas() {
 }
 
 void Application::handleMouseButton(int button, int action, int mods) {
-    editors_[currentEditorIndex_]->handleMouseButton(button, action, mods);
+    // Get current mouse position and convert to canvas coordinates
+    double xpos, ypos;
+    glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
+
+    // Adjust to canvas coordinates
+    double canvasX = xpos - canvasX_;
+    double canvasY = ypos - canvasY_;
+
+    editors_[currentEditorIndex_]->handleMouseButton(button, action, mods, canvasX, canvasY);
 }
 
 void Application::handleMousePosition(double xpos, double ypos) {

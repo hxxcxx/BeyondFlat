@@ -28,7 +28,7 @@ public:
     void renderCanvas(const ImVec2& canvasPos) override;
 
     // Handle mouse input
-    void handleMouseButton(int button, int action, int mods) override;
+    void handleMouseButton(int button, int action, int mods, double xpos, double ypos) override;
     void handleMousePosition(double xpos, double ypos) override;
 
     // Get editor name
