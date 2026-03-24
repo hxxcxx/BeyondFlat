@@ -3,6 +3,7 @@
 // Base class for curve editors
 
 #include "curve_renderer.h"
+#include <imgui.h>
 #include <memory>
 #include <string>
 
@@ -21,6 +22,9 @@ public:
 
     // Render control panel (left side)
     virtual void renderControlPanel() = 0;
+
+    // Render canvas (right side) using ImGui draw list
+    virtual void renderCanvas(const ImVec2& canvasPos) = 0;
 
     // Handle mouse input
     virtual void handleMouseButton(int button, int action, int mods) = 0;

@@ -100,39 +100,12 @@ void Application::renderCanvas() {
         editors_[currentEditorIndex_]->handleMousePosition(mousePos.x - canvasPos.x, mousePos.y - canvasPos.y);
     }
 
+    // Render the curve using ImGui draw list
+    editors_[currentEditorIndex_]->renderCanvas(canvasPos);
+
     ImGui::End();
 
     ImGui::PopStyleVar(2);
-}
-
-void Application::postRender() {
-    // Render the curve using OpenGL after ImGui has been rendered
-    // Set up OpenGL viewport for the canvas area
-    glViewport(canvasX_, canvasY_, canvasWidth_, canvasHeight_);
-
-    // Set up orthographic projection for 2D rendering
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, canvasWidth_, canvasHeight_, 0, -1, 1);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    // Enable blending for transparency
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Render the current editor's curve
-    editors_[currentEditorIndex_]->render();
-
-    // Restore OpenGL state
-    glDisable(GL_BLEND);
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
 }
 
 void Application::handleMouseButton(int button, int action, int mods) {

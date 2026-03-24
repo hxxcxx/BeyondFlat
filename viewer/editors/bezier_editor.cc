@@ -158,6 +158,98 @@ void BezierEditor::renderControlPanel() {
     renderInfoPanel();
 }
 
+void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    if (!drawList || !curve_) return;
+
+    // Get control points
+    PointVector2d points = curve_->controlPoints();
+
+    // Convert control points to screen coordinates
+    std::vector<ImVec2> screenPoints;
+    for (const auto& pt : points) {
+        float sx, sy;
+        renderer_->convertWorldToScreen(pt, sx, sy);
+        screenPoints.push_back(ImVec2(canvasPos.x + sx, canvasPos.y + sy));
+    }
+
+    // Draw control polygon
+    if (showControlPolygon_) {
+        for (size_t i = 0; i < screenPoints.size() - 1; ++i) {
+            drawList->AddLine(screenPoints[i], screenPoints[i + 1],
+                            IM_COL32(128, 128, 128, 128), 1.5f);
+        }
+    }
+
+    // Draw Bezier curve
+    const int segments = 100;
+    for (int i = 0; i < segments; ++i) {
+        double t1 = static_cast<double>(i) / segments;
+        double t2 = static_cast<double>(i + 1) / segments;
+
+        Point2d p1 = curve_->evaluate(t1);
+        Point2d p2 = curve_->evaluate(t2);
+
+        float sx1, sy1, sx2, sy2;
+        renderer_->convertWorldToScreen(p1, sx1, sy1);
+        renderer_->convertWorldToScreen(p2, sx2, sy2);
+
+        drawList->AddLine(
+            ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
+            ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
+            IM_COL32(255, 255, 255, 255), 2.0f
+        );
+    }
+
+    // Draw control points
+    if (showControlPoints_) {
+        for (size_t i = 0; i < screenPoints.size(); ++i) {
+            ImU32 color = (i == selectedControlPoint_) ?
+                         IM_COL32(255, 255, 0, 255) :  // Yellow for selected
+                         IM_COL32(255, 165, 0, 255);    // Orange for others
+
+            drawList->AddCircleFilled(screenPoints[i], controlPointSize_, color);
+            drawList->AddCircle(screenPoints[i], controlPointSize_, IM_COL32(255, 255, 255, 255));
+        }
+    }
+
+    // Draw tangent
+    if (showTangent_) {
+        Point2d tangentPoint = curve_->evaluate(tangentParam_);
+        Point2d tangentDir = curve_->derivative(tangentParam_);
+        double tangentLength = 30.0;
+
+        float tx, ty;
+        renderer_->convertWorldToScreen(tangentPoint, tx, ty);
+
+        // Normalize and scale tangent
+        double norm = tangentDir.norm();
+        if (norm > 1e-6) {
+            Point2d tangentEnd = tangentPoint + (tangentDir / norm) * tangentLength;
+            float ex, ey;
+            renderer_->convertWorldToScreen(tangentEnd, ex, ey);
+
+            drawList->AddLine(
+                ImVec2(canvasPos.x + tx, canvasPos.y + ty),
+                ImVec2(canvasPos.x + ex, canvasPos.y + ey),
+                IM_COL32(0, 255, 0, 255), 2.0f
+            );
+        }
+    }
+
+    // Draw point on curve
+    if (showPointOnCurve_) {
+        Point2d pt = curve_->evaluate(pointOnCurveParam_);
+        float px, py;
+        renderer_->convertWorldToScreen(pt, px, py);
+
+        drawList->AddCircleFilled(
+            ImVec2(canvasPos.x + px, canvasPos.y + py),
+            8.0f, IM_COL32(255, 0, 0, 255)
+        );
+    }
+}
+
 void BezierEditor::renderInfoPanel() {
     ImGui::Begin("Bezier Curve Info");
 

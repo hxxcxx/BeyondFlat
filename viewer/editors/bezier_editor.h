@@ -24,6 +24,9 @@ public:
     // Render control panel (left side)
     void renderControlPanel() override;
 
+    // Render canvas using ImGui draw list
+    void renderCanvas(const ImVec2& canvasPos) override;
+
     // Handle mouse input
     void handleMouseButton(int button, int action, int mods) override;
     void handleMousePosition(double xpos, double ypos) override;

@@ -83,9 +83,6 @@ int main() {
         // Render ImGui UI
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Render curves after ImGui
-        g_app->postRender();
-
         glfwSwapBuffers(window);
     }
 

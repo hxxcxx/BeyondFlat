@@ -22,9 +22,6 @@ public:
     // Render the main UI
     void render();
 
-    // Render curves after ImGui rendering
-    void postRender();
-
     // Handle mouse input
     void handleMouseButton(int button, int action, int mods);
     void handleMousePosition(double xpos, double ypos);
