@@ -22,7 +22,6 @@ CMakeCache.txt
 
 # IDE
 .vs/
-.vscode/
 *.user
 *.suo
 *.sln

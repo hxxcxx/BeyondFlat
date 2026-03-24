@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "*.cc": "cpp",
+        "*.h": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "type_traits": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cmake.configureOnOpen": true,
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.generator": "Ninja",
+    "cmake.defaultVariants": {
+        "buildType": "Release",
+        "kt": "release"
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/build": false
+    }
+}
