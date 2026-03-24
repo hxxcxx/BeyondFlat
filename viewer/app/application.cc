@@ -82,33 +82,57 @@ void Application::renderCanvas() {
     canvasWidth_ = static_cast<int>(canvasSize.x);
     canvasHeight_ = static_cast<int>(canvasSize.y);
 
+    // Update the current editor's canvas size
+    editors_[currentEditorIndex_]->setScreenSize(canvasWidth_, canvasHeight_);
+
     // Create invisible button for mouse interaction
     ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft);
 
-    // Check if mouse is hovering over canvas
-    bool isHovered = ImGui::IsItemHovered();
-
-    // Render the current editor's curve
-    if (isHovered || ImGui::IsItemActive()) {
-        // Handle mouse input
-        if (ImGui::IsMouseClicked(0)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
-        } else if (ImGui::IsMouseReleased(0)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
-        }
-
-        if (ImGui::IsMouseDragging(0)) {
-            ImVec2 mousePos = ImGui::GetMousePos();
-            editors_[currentEditorIndex_]->handleMousePosition(mousePos.x - canvasPos.x, mousePos.y - canvasPos.y);
-        }
+    // Handle mouse input
+    if (ImGui::IsMouseClicked(0)) {
+        editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
+    } else if (ImGui::IsMouseReleased(0)) {
+        editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
     }
 
-    // Render the curve using OpenGL
-    editors_[currentEditorIndex_]->render();
+    if (ImGui::IsMouseDragging(0)) {
+        ImVec2 mousePos = ImGui::GetMousePos();
+        editors_[currentEditorIndex_]->handleMousePosition(mousePos.x - canvasPos.x, mousePos.y - canvasPos.y);
+    }
 
     ImGui::End();
 
     ImGui::PopStyleVar(2);
+}
+
+void Application::postRender() {
+    // Render the curve using OpenGL after ImGui has been rendered
+    // Set up OpenGL viewport for the canvas area
+    glViewport(canvasX_, canvasY_, canvasWidth_, canvasHeight_);
+
+    // Set up orthographic projection for 2D rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, canvasWidth_, canvasHeight_, 0, -1, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Enable blending for transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Render the current editor's curve
+    editors_[currentEditorIndex_]->render();
+
+    // Restore OpenGL state
+    glDisable(GL_BLEND);
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
 }
 
 void Application::handleMouseButton(int button, int action, int mods) {

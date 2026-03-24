@@ -69,7 +69,7 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Render the application
+        // Render the application UI
         g_app->render();
 
         // Rendering
@@ -79,7 +79,12 @@ int main() {
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.1f, 0.1f, 0.15f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // Render ImGui UI
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Render curves after ImGui
+        g_app->postRender();
 
         glfwSwapBuffers(window);
     }
