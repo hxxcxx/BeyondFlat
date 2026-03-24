@@ -2,8 +2,8 @@
 
 // Main application class for managing curve editors
 
-#include "../base/curve_editor.h"
-#include "../editors/bezier_editor.h"
+#include "viewer/framework/base/curve_editor.h"
+#include "viewer/impl/bezier/curve_editor.h"
 #include <memory>
 #include <vector>
 #include <string>

@@ -2,9 +2,8 @@
 
 // Bezier Curve Editor
 
-#include "../base/curve_editor.h"
-#include "../../src/bezier/bezier_curve.h"
-#include "../render/bezier_renderer.h"
+#include "viewer/framework/base/curve_editor.h"
+#include "src/bezier/bezier_curve.h"
 #include <memory>
 
 namespace cagd {

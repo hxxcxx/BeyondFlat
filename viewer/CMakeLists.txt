@@ -5,57 +5,36 @@ set(VIEWER_SOURCES
     main.cc
 )
 
-# Application sources
-set(APP_SOURCES
-    app/application.cc
+# Framework sources
+set(FRAMEWORK_SOURCES
+    framework/application.cc
 )
 
-set(APP_HEADERS
-    app/application.h
+set(FRAMEWORK_HEADERS
+    framework/application.h
+    framework/base/curve_editor.h
 )
 
-# Base classes
-set(BASE_SOURCES
-    # No base sources yet, only headers
+# Bezier curve implementation
+set(BEZIER_SOURCES
+    impl/bezier/curve_editor.cc
 )
 
-set(BASE_HEADERS
-    base/curve_editor.h
-    base/curve_renderer.h
-)
-
-# Editor sources
-set(EDITOR_SOURCES
-    editors/bezier_editor.cc
-)
-
-set(EDITOR_HEADERS
-    editors/bezier_editor.h
-)
-
-# Renderer sources
-set(RENDER_SOURCES
-    render/bezier_renderer.cc
-)
-
-set(RENDER_HEADERS
-    render/bezier_renderer.h
+set(BEZIER_HEADERS
+    impl/bezier/curve_editor.h
 )
 
 # Collect all sources
 set(ALL_SOURCES
     ${VIEWER_SOURCES}
-    ${APP_SOURCES}
-    ${EDITOR_SOURCES}
-    ${RENDER_SOURCES}
+    ${FRAMEWORK_SOURCES}
+    ${BEZIER_SOURCES}
 )
 
 # Collect all headers
 set(ALL_HEADERS
-    ${APP_HEADERS}
-    ${BASE_HEADERS}
-    ${EDITOR_HEADERS}
-    ${RENDER_HEADERS}
+    ${FRAMEWORK_HEADERS}
+    ${BEZIER_HEADERS}
 )
 
 # Create viewer executable
@@ -74,6 +53,7 @@ target_link_libraries(cagd_viewer PRIVATE
 
 # Set include directories
 target_include_directories(cagd_viewer PRIVATE
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src
 )
 

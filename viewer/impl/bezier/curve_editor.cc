@@ -1,4 +1,4 @@
-#include "bezier_editor.h"
+#include "viewer/impl/bezier/curve_editor.h"
 #include <imgui.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -39,38 +39,14 @@ BezierEditor::BezierEditor()
     controlPoints.emplace_back(50, -20);
 
     curve_ = std::make_unique<BezierCurve2d>(controlPoints);
-    renderer_ = std::make_unique<BezierRenderer>();
 }
 
 void BezierEditor::initialize() {
-    renderer_->setScreenSize(screenWidth_, screenHeight_);
-    renderer_->setWorldBounds(worldMinX_, worldMaxX_, worldMinY_, worldMaxY_);
-
-    // Set the curve in the renderer
-    auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
-    bezierRenderer->setCurve(*curve_);
+    // Nothing to initialize - we don't use renderer anymore
 }
 
 void BezierEditor::render() {
-    // Update renderer options
-    auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
-    bezierRenderer->setShowTangent(showTangent_);
-    bezierRenderer->setShowPointOnCurve(showPointOnCurve_);
-    bezierRenderer->setTangentParam(tangentParam_);
-    bezierRenderer->setPointOnCurveParam(pointOnCurveParam_);
-
-    // Render the curve and related elements
-    if (showControlPolygon_) {
-        renderer_->renderControlPolygon();
-    }
-
-    renderer_->renderCurve();
-
-    if (showControlPoints_) {
-        renderer_->renderControlPoints();
-    }
-
-    renderer_->renderVisualizations();
+    // Nothing to render here - all rendering is done in renderCanvas()
 }
 
 void BezierEditor::renderControlPanel() {
@@ -134,7 +110,7 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
     std::vector<ImVec2> screenPoints;
     for (const auto& pt : points) {
         float sx, sy;
-        renderer_->convertWorldToScreen(pt, sx, sy);
+        worldToScreen(pt, sx, sy);
         screenPoints.push_back(ImVec2(canvasPos.x + sx, canvasPos.y + sy));
     }
 
@@ -156,8 +132,8 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
         Point2d p2 = curve_->evaluate(t2);
 
         float sx1, sy1, sx2, sy2;
-        renderer_->convertWorldToScreen(p1, sx1, sy1);
-        renderer_->convertWorldToScreen(p2, sx2, sy2);
+        worldToScreen(p1, sx1, sy1);
+        worldToScreen(p2, sx2, sy2);
 
         drawList->AddLine(
             ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
@@ -185,14 +161,14 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
         double tangentLength = 30.0;
 
         float tx, ty;
-        renderer_->convertWorldToScreen(tangentPoint, tx, ty);
+        worldToScreen(tangentPoint, tx, ty);
 
         // Normalize and scale tangent
         double norm = tangentDir.norm();
         if (norm > 1e-6) {
             Point2d tangentEnd = tangentPoint + (tangentDir / norm) * tangentLength;
             float ex, ey;
-            renderer_->convertWorldToScreen(tangentEnd, ex, ey);
+            worldToScreen(tangentEnd, ex, ey);
 
             drawList->AddLine(
                 ImVec2(canvasPos.x + tx, canvasPos.y + ty),
@@ -206,7 +182,7 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
     if (showPointOnCurve_) {
         Point2d pt = curve_->evaluate(pointOnCurveParam_);
         float px, py;
-        renderer_->convertWorldToScreen(pt, px, py);
+        worldToScreen(pt, px, py);
 
         drawList->AddCircleFilled(
             ImVec2(canvasPos.x + px, canvasPos.y + py),
@@ -257,8 +233,7 @@ void BezierEditor::handleMouseButton(int button, int action, int, double xpos, d
                 isDragging_ = true;
             } else {
                 // Clicked on empty space, add new control point
-                auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
-                Point2d worldPos = bezierRenderer->convertScreenToWorld(xpos, ypos);
+                Point2d worldPos = screenToWorld(xpos, ypos);
 
                 PointVector2d points = curve_->controlPoints();
 
@@ -297,8 +272,7 @@ void BezierEditor::handleMouseButton(int button, int action, int, double xpos, d
 
 void BezierEditor::handleMousePosition(double xpos, double ypos) {
     if (isDragging_ && selectedControlPoint_ >= 0) {
-        auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
-        Point2d worldPos = bezierRenderer->convertScreenToWorld(xpos, ypos);
+        Point2d worldPos = screenToWorld(xpos, ypos);
         PointVector2d points = curve_->controlPoints();
         points[selectedControlPoint_] = worldPos;
         curve_->setControlPoints(points);
@@ -307,11 +281,10 @@ void BezierEditor::handleMousePosition(double xpos, double ypos) {
 
 int BezierEditor::findControlPoint(double mouseX, double mouseY) {
     PointVector2d points = curve_->controlPoints();
-    auto* bezierRenderer = static_cast<BezierRenderer*>(renderer_.get());
 
     for (size_t i = 0; i < points.size(); ++i) {
         float sx, sy;
-        bezierRenderer->convertWorldToScreen(points[i], sx, sy);
+        worldToScreen(points[i], sx, sy);
 
         double dx = mouseX - sx;
         double dy = mouseY - sy;

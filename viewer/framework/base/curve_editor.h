@@ -2,8 +2,8 @@
 
 // Base class for curve editors
 
-#include "curve_renderer.h"
 #include <imgui.h>
+#include "src/cagd_types.h"
 #include <memory>
 #include <string>
 
@@ -40,17 +40,21 @@ public:
     void setScreenSize(int width, int height) {
         screenWidth_ = width;
         screenHeight_ = height;
-        if (renderer_) {
-            renderer_->setScreenSize(width, height);
-        }
     }
 
-    // Get the renderer
-    CurveRenderer* getRenderer() { return renderer_.get(); }
-
 protected:
-    // Renderer for this curve type
-    std::unique_ptr<CurveRenderer> renderer_;
+    // Helper function to convert world to screen coordinates
+    void worldToScreen(const Point2d& world, float& screenX, float& screenY) {
+        screenX = static_cast<float>((world.x() - worldMinX_) / (worldMaxX_ - worldMinX_) * screenWidth_);
+        screenY = static_cast<float>((world.y() - worldMinY_) / (worldMaxY_ - worldMinY_) * screenHeight_);
+    }
+
+    // Helper function to convert screen to world coordinates
+    Point2d screenToWorld(double screenX, double screenY) {
+        double worldX = worldMinX_ + (screenX / screenWidth_) * (worldMaxX_ - worldMinX_);
+        double worldY = worldMinY_ + (screenY / screenHeight_) * (worldMaxY_ - worldMinY_);
+        return Point2d(worldX, worldY);
+    }
 
     // Screen dimensions
     int screenWidth_;

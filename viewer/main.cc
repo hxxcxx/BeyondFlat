@@ -5,7 +5,7 @@
 #include <iostream>
 #include <memory>
 
-#include "app/application.h"
+#include "framework/application.h"
 
 // Global variables
 std::unique_ptr<cagd::Application> g_app;
