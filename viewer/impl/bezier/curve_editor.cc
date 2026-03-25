@@ -17,6 +17,8 @@ BezierEditor::BezierEditor()
     , showPointOnCurve_(false)
     , tangentParam_(0.5)
     , pointOnCurveParam_(0.5)
+    , subdivideParam_(0.5)
+    , showSubdividePoint_(false)
     , selectedControlPoint_(-1)
     , isDragging_(false)
     , controlPointSize_(10.0f) {
@@ -77,9 +79,19 @@ void BezierEditor::renderControlPanel() {
 
     ImGui::Separator();
 
-    // Control point count info
-    PointVector2d points = curve_->controlPoints();
-    ImGui::Text("Control Points: %zu / 20", points.size());
+    // Subdivision section
+    ImGui::Checkbox("Show Subdivide Point", &showSubdividePoint_);
+    if (showSubdividePoint_) {
+        double min = 0.0, max = 1.0;
+        ImGui::SliderScalar("Subdivide Parameter", ImGuiDataType_Double, &subdivideParam_, &min, &max);
+
+        if (ImGui::Button("Subdivide at Parameter")) {
+            performSubdivision();
+        }
+
+        ImGui::SameLine();
+        ImGui::Text("(Press 'S' to subdivide)");
+    }
 
     ImGui::Separator();
 
@@ -93,10 +105,36 @@ void BezierEditor::renderControlPanel() {
         curve_->setControlPoints(defaultPoints);
     }
 
-    ImGui::End();
+    ImGui::Separator();
 
-    // Render info panel
-    renderInfoPanel();
+    // Curve information
+    ImGui::Text("Curve Info:");
+    ImGui::Text("Degree: %d", curve_->degree());
+    ImGui::Text("Control Points: %zu / 20", curve_->controlPoints().size());
+
+    ImGui::Separator();
+
+    // Curve properties at t = 0.5
+    Point2d p05 = curve_->evaluate(0.5);
+    Point2d tangent = curve_->derivative(0.5);
+    double tangentNorm = tangent.norm();
+
+    ImGui::Text("Point at t=0.5: (%.2f, %.2f)", p05.x(), p05.y());
+    ImGui::Text("Tangent at t=0.5: (%.2f, %.2f)", tangent.x(), tangent.y());
+    ImGui::Text("Tangent Norm: %.2f", tangentNorm);
+
+    ImGui::Separator();
+
+    // Instructions
+    ImGui::Text("Instructions:");
+    ImGui::BulletText("Left-click on empty space to add control point");
+    ImGui::BulletText("Left-click and drag to move control points");
+    ImGui::BulletText("Right-click on control point to delete it");
+    ImGui::BulletText("Press 'S' to subdivide curve at selected point");
+    ImGui::BulletText("Use sliders to fine-tune positions");
+    ImGui::BulletText("Toggle visualization options");
+
+    ImGui::End();
 }
 
 void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
@@ -189,37 +227,23 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
             8.0f, IM_COL32(255, 0, 0, 255)
         );
     }
-}
 
-void BezierEditor::renderInfoPanel() {
-    ImGui::Begin("Bezier Curve Info");
+    // Draw subdivision point
+    if (showSubdividePoint_) {
+        Point2d pt = curve_->evaluate(subdivideParam_);
+        float px, py;
+        worldToScreen(pt, px, py);
 
-    // Curve information
-    ImGui::Text("Degree: %d", curve_->degree());
-    ImGui::Text("Number of Control Points: %zu", curve_->controlPoints().size());
-
-    ImGui::Separator();
-
-    // Curve properties at t = 0.5
-    Point2d p05 = curve_->evaluate(0.5);
-    Point2d tangent = curve_->derivative(0.5);
-    double tangentNorm = tangent.norm();
-
-    ImGui::Text("Point at t=0.5: (%.2f, %.2f)", p05.x(), p05.y());
-    ImGui::Text("Tangent at t=0.5: (%.2f, %.2f)", tangent.x(), tangent.y());
-    ImGui::Text("Tangent Norm: %.2f", tangentNorm);
-
-    ImGui::Separator();
-
-    // Instructions
-    ImGui::Text("Instructions:");
-    ImGui::BulletText("Left-click on empty space to add control point");
-    ImGui::BulletText("Left-click and drag to move control points");
-    ImGui::BulletText("Right-click on control point to delete it");
-    ImGui::BulletText("Use sliders to fine-tune positions");
-    ImGui::BulletText("Toggle visualization options");
-
-    ImGui::End();
+        // Draw subdivision point with a different color (cyan)
+        drawList->AddCircleFilled(
+            ImVec2(canvasPos.x + px, canvasPos.y + py),
+            10.0f, IM_COL32(0, 255, 255, 255)
+        );
+        drawList->AddCircle(
+            ImVec2(canvasPos.x + px, canvasPos.y + py),
+            10.0f, IM_COL32(255, 255, 255, 255), 2.0f
+        );
+    }
 }
 
 void BezierEditor::handleMouseButton(int button, int action, int, double xpos, double ypos) {
@@ -296,6 +320,33 @@ int BezierEditor::findControlPoint(double mouseX, double mouseY) {
     }
 
     return -1;
+}
+
+void BezierEditor::performSubdivision() {
+    if (!curve_) return;
+
+    // Subdivide the curve at the current parameter
+    auto [leftCurve, rightCurve] = curve_->subdivide(subdivideParam_);
+
+    // Replace current curve with the left part
+    // Note: In a more complete implementation, you might want to keep both curves
+    // or add them to a list of curves. For now, we'll just use the left curve.
+    curve_ = std::make_unique<BezierCurve2d>(leftCurve.controlPoints());
+
+    // Reset subdivision point display
+    showSubdividePoint_ = false;
+}
+
+void BezierEditor::handleKey(int key, int action, int mods) {
+    // Only handle key press events
+    if (action != GLFW_PRESS) return;
+
+    // Subdivide on 'S' key
+    if (key == GLFW_KEY_S && !mods) {
+        if (showSubdividePoint_) {
+            performSubdivision();
+        }
+    }
 }
 
 } // namespace cagd

@@ -143,6 +143,10 @@ void Application::handleMousePosition(double xpos, double ypos) {
     editors_[currentEditorIndex_]->handleMousePosition(canvasX, canvasY);
 }
 
+void Application::handleKey(int key, int action, int mods) {
+    editors_[currentEditorIndex_]->handleKey(key, action, mods);
+}
+
 void Application::setScreenSize(int width, int height) {
     screenWidth_ = width;
     screenHeight_ = height;

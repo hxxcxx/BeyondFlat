@@ -34,6 +34,10 @@ public:
     // Set control points
     void setControlPoints(const PointVector2d& points) { control_points_ = points; }
 
+    // Subdivide curve at parameter t using de Casteljau algorithm
+    // Returns a pair of curves: [0, t] and [t, 1]
+    std::pair<BezierCurve2d, BezierCurve2d> subdivide(double t) const;
+
 private:
     PointVector2d control_points_;
 };

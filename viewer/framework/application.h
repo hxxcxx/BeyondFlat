@@ -26,6 +26,9 @@ public:
     void handleMouseButton(int button, int action, int mods);
     void handleMousePosition(double xpos, double ypos);
 
+    // Handle keyboard input
+    void handleKey(int key, int action, int mods);
+
     // Set screen dimensions
     void setScreenSize(int width, int height);
 

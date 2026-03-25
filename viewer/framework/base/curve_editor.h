@@ -30,6 +30,9 @@ public:
     virtual void handleMouseButton(int button, int action, int mods, double xpos, double ypos) = 0;
     virtual void handleMousePosition(double xpos, double ypos) = 0;
 
+    // Handle keyboard input (optional, default implementation does nothing)
+    virtual void handleKey(int key, int action, int mods) {}
+
     // Get editor name
     virtual std::string getName() const = 0;
 

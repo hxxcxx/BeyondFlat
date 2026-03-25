@@ -38,12 +38,15 @@ public:
         return "Parametric curve defined by control points using Bernstein polynomials";
     }
 
-private:
-    // Render info panel
-    void renderInfoPanel();
+    // Handle keyboard input
+    void handleKey(int key, int action, int mods) override;
 
+private:
     // Check if mouse is over a control point
     int findControlPoint(double mouseX, double mouseY);
+
+    // Perform subdivision at current parameter
+    void performSubdivision();
 
     // Current Bezier curve
     std::unique_ptr<BezierCurve2d> curve_;
@@ -59,6 +62,10 @@ private:
 
     // Point on curve parameter
     double pointOnCurveParam_;
+
+    // Subdivision parameter
+    double subdivideParam_;
+    bool showSubdividePoint_;
 
     // Interaction state
     int selectedControlPoint_;

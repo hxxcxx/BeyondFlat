@@ -22,6 +22,14 @@ void framebufferSizeCallback(GLFWwindow*, int width, int height) {
     }
 }
 
+// Keyboard callback
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    // Forward key events to application
+    if (g_app) {
+        g_app->handleKey(key, action, mods);
+    }
+}
+
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
@@ -42,6 +50,7 @@ int main() {
 
     // Setup callbacks
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetKeyCallback(window, keyCallback);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();

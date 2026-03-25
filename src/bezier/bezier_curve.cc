@@ -70,6 +70,43 @@ Point2d BezierCurve2d::derivative(double t, int order) const {
     return derivCurve.evaluate(t);
 }
 
+std::pair<BezierCurve2d, BezierCurve2d> BezierCurve2d::subdivide(double t) const {
+    // Clamp t to [0, 1]
+    t = std::max(0.0, std::min(1.0, t));
+
+    const int n = degree();
+
+    // Create a 2D array to store de Casteljau intermediate points
+    std::vector<std::vector<Point2d>> pyramid(n + 1);
+
+    // Initialize first level with original control points
+    pyramid[0] = control_points_;
+
+    // De Casteljau algorithm - build the pyramid
+    for (int k = 1; k <= n; ++k) {
+        pyramid[k].resize(n + 1 - k);
+        for (int i = 0; i <= n - k; ++i) {
+            pyramid[k][i] = (1.0 - t) * pyramid[k - 1][i] + t * pyramid[k - 1][i + 1];
+        }
+    }
+
+    // Extract control points for left curve [0, t]
+    // Left curve control points are the first point of each level
+    PointVector2d leftPoints;
+    for (int k = 0; k <= n; ++k) {
+        leftPoints.push_back(pyramid[k][0]);
+    }
+
+    // Extract control points for right curve [t, 1]
+    // Right curve control points are the last point of each level (in reverse order)
+    PointVector2d rightPoints;
+    for (int k = 0; k <= n; ++k) {
+        rightPoints.push_back(pyramid[n - k][k]);
+    }
+
+    return std::make_pair(BezierCurve2d(leftPoints), BezierCurve2d(rightPoints));
+}
+
 // ============================================================================
 // BezierCurve3d Implementation
 // ============================================================================
