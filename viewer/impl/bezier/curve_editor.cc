@@ -19,6 +19,7 @@ BezierEditor::BezierEditor()
     , pointOnCurveParam_(0.5)
     , subdivideParam_(0.5)
     , showSubdividePoint_(false)
+    , showSubdividedCurves_(false)
     , selectedControlPoint_(-1)
     , isDragging_(false)
     , controlPointSize_(10.0f) {
@@ -91,6 +92,37 @@ void BezierEditor::renderControlPanel() {
 
         ImGui::SameLine();
         ImGui::Text("(Press 'S' to subdivide)");
+    }
+
+    // Show subdivided curves controls
+    if (showSubdividedCurves_) {
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), "Subdivided Curves:");
+        ImGui::Checkbox("Show Subdivided Curves", &showSubdividedCurves_);
+
+        if (ImGui::Button("Keep Left Curve")) {
+            curve_ = std::make_unique<BezierCurve2d>(subdividedLeftCurve_->controlPoints());
+            showSubdividedCurves_ = false;
+            subdividedLeftCurve_.reset();
+            subdividedRightCurve_.reset();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Keep Right Curve")) {
+            curve_ = std::make_unique<BezierCurve2d>(subdividedRightCurve_->controlPoints());
+            showSubdividedCurves_ = false;
+            subdividedLeftCurve_.reset();
+            subdividedRightCurve_.reset();
+        }
+
+        if (ImGui::Button("Clear Subdivided Curves")) {
+            showSubdividedCurves_ = false;
+            subdividedLeftCurve_.reset();
+            subdividedRightCurve_.reset();
+        }
+
+        ImGui::Text("Left curve: Green | Right curve: Blue");
     }
 
     ImGui::Separator();
@@ -178,6 +210,48 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
             ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
             IM_COL32(255, 255, 255, 255), 2.0f
         );
+    }
+
+    // Draw subdivided curves (if enabled)
+    if (showSubdividedCurves_ && subdividedLeftCurve_ && subdividedRightCurve_) {
+        // Draw left curve in green
+        const int segSub = 100;
+        for (int i = 0; i < segSub; ++i) {
+            double t1 = static_cast<double>(i) / segSub;
+            double t2 = static_cast<double>(i + 1) / segSub;
+
+            Point2d p1 = subdividedLeftCurve_->evaluate(t1);
+            Point2d p2 = subdividedLeftCurve_->evaluate(t2);
+
+            float sx1, sy1, sx2, sy2;
+            worldToScreen(p1, sx1, sy1);
+            worldToScreen(p2, sx2, sy2);
+
+            drawList->AddLine(
+                ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
+                ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
+                IM_COL32(0, 255, 0, 255), 2.0f
+            );
+        }
+
+        // Draw right curve in blue
+        for (int i = 0; i < segSub; ++i) {
+            double t1 = static_cast<double>(i) / segSub;
+            double t2 = static_cast<double>(i + 1) / segSub;
+
+            Point2d p1 = subdividedRightCurve_->evaluate(t1);
+            Point2d p2 = subdividedRightCurve_->evaluate(t2);
+
+            float sx1, sy1, sx2, sy2;
+            worldToScreen(p1, sx1, sy1);
+            worldToScreen(p2, sx2, sy2);
+
+            drawList->AddLine(
+                ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
+                ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
+                IM_COL32(0, 100, 255, 255), 2.0f
+            );
+        }
     }
 
     // Draw control points
@@ -328,10 +402,12 @@ void BezierEditor::performSubdivision() {
     // Subdivide the curve at the current parameter
     auto [leftCurve, rightCurve] = curve_->subdivide(subdivideParam_);
 
-    // Replace current curve with the left part
-    // Note: In a more complete implementation, you might want to keep both curves
-    // or add them to a list of curves. For now, we'll just use the left curve.
-    curve_ = std::make_unique<BezierCurve2d>(leftCurve.controlPoints());
+    // Store both subdivided curves for display
+    subdividedLeftCurve_ = std::make_unique<BezierCurve2d>(leftCurve.controlPoints());
+    subdividedRightCurve_ = std::make_unique<BezierCurve2d>(rightCurve.controlPoints());
+
+    // Show the subdivided curves
+    showSubdividedCurves_ = true;
 
     // Reset subdivision point display
     showSubdividePoint_ = false;

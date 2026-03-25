@@ -67,6 +67,11 @@ private:
     double subdivideParam_;
     bool showSubdividePoint_;
 
+    // Subdivided curves (for display after subdivision)
+    std::unique_ptr<BezierCurve2d> subdividedLeftCurve_;
+    std::unique_ptr<BezierCurve2d> subdividedRightCurve_;
+    bool showSubdividedCurves_;
+
     // Interaction state
     int selectedControlPoint_;
     bool isDragging_;
