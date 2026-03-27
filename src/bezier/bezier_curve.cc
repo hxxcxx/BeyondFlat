@@ -57,15 +57,21 @@ Point2d BezierCurve2d::derivative(double t, int order) const {
     // Clamp t to [0, 1]
     t = std::max(0.0, std::min(1.0, t));
 
-    // Compute control points of derivative curve
-    PointVector2d derivPoints;
-    const int n = degree();
+    // Iteratively compute control points of the order-th derivative curve
+    PointVector2d derivPoints = control_points_;
+    int curDeg = degree();
 
-    for (int i = 0; i < n; ++i) {
-        derivPoints.push_back(n * (control_points_[i + 1] - control_points_[i]));
+    for (int d = 0; d < order; ++d) {
+        PointVector2d nextPoints;
+        nextPoints.reserve(curDeg);
+        for (int i = 0; i < curDeg; ++i) {
+            nextPoints.push_back(curDeg * (derivPoints[i + 1] - derivPoints[i]));
+        }
+        derivPoints = std::move(nextPoints);
+        --curDeg;
     }
 
-    // Create derivative curve and evaluate
+    // Evaluate the order-th derivative Bezier curve at t
     BezierCurve2d derivCurve(derivPoints);
     return derivCurve.evaluate(t);
 }
@@ -160,15 +166,21 @@ Point3d BezierCurve3d::derivative(double t, int order) const {
     // Clamp t to [0, 1]
     t = std::max(0.0, std::min(1.0, t));
 
-    // Compute control points of derivative curve
-    PointVector3d derivPoints;
-    const int n = degree();
+    // Iteratively compute control points of the order-th derivative curve
+    PointVector3d derivPoints = control_points_;
+    int curDeg = degree();
 
-    for (int i = 0; i < n; ++i) {
-        derivPoints.push_back(n * (control_points_[i + 1] - control_points_[i]));
+    for (int d = 0; d < order; ++d) {
+        PointVector3d nextPoints;
+        nextPoints.reserve(curDeg);
+        for (int i = 0; i < curDeg; ++i) {
+            nextPoints.push_back(curDeg * (derivPoints[i + 1] - derivPoints[i]));
+        }
+        derivPoints = std::move(nextPoints);
+        --curDeg;
     }
 
-    // Create derivative curve and evaluate
+    // Evaluate the order-th derivative Bezier curve at t
     BezierCurve3d derivCurve(derivPoints);
     return derivCurve.evaluate(t);
 }
