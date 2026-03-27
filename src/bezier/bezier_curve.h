@@ -38,6 +38,14 @@ public:
     // Returns a pair of curves: [0, t] and [t, 1]
     std::pair<BezierCurve2d, BezierCurve2d> subdivide(double t) const;
 
+    // Degree elevation: exact representation as (degree+1) curve
+    BezierCurve2d elevateDegree() const;
+
+    // Degree reduction: approximate representation as (degree-1) curve
+    // Uses averaging of forward and backward solutions
+    // Returns nullopt if degree < 1
+    std::optional<BezierCurve2d> reduceDegree() const;
+
 private:
     PointVector2d control_points_;
 };
@@ -68,6 +76,13 @@ public:
 
     // Set control points
     void setControlPoints(const PointVector3d& points) { control_points_ = points; }
+
+    // Degree elevation: exact representation as (degree+1) curve
+    BezierCurve3d elevateDegree() const;
+
+    // Degree reduction: approximate representation as (degree-1) curve
+    // Returns nullopt if degree < 1
+    std::optional<BezierCurve3d> reduceDegree() const;
 
 private:
     PointVector3d control_points_;

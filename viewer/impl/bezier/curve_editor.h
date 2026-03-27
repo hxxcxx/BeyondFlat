@@ -76,6 +76,11 @@ private:
     int selectedControlPoint_;
     bool isDragging_;
 
+    // Degree reduction warning
+    bool showReducedDegreeWarning_ = false;
+    double reducedDegreeError_ = 0.0;
+    std::unique_ptr<BezierCurve2d> previewReducedCurve_;
+
     // Control point size for interaction
     float controlPointSize_;
 };

@@ -113,6 +113,55 @@ std::pair<BezierCurve2d, BezierCurve2d> BezierCurve2d::subdivide(double t) const
     return std::make_pair(BezierCurve2d(leftPoints), BezierCurve2d(rightPoints));
 }
 
+BezierCurve2d BezierCurve2d::elevateDegree() const {
+    const int n = degree();
+    const int newN = n + 1;
+
+    PointVector2d newPoints;
+    newPoints.reserve(newN + 1);
+
+    // P_0* = P_0
+    newPoints.push_back(control_points_[0]);
+
+    // P_i* = (i/(n+1)) * P_{i-1} + (1 - i/(n+1)) * P_i
+    for (int i = 1; i <= n; ++i) {
+        double alpha = static_cast<double>(i) / newN;
+        newPoints.push_back(alpha * control_points_[i - 1] + (1.0 - alpha) * control_points_[i]);
+    }
+
+    // P_{n+1}* = P_n
+    newPoints.push_back(control_points_[n]);
+
+    return BezierCurve2d(newPoints);
+}
+
+std::optional<BezierCurve2d> BezierCurve2d::reduceDegree() const {
+    const int n = degree();
+    if (n < 1) return std::nullopt;
+
+    // Forward solution (preserves left end)
+    PointVector2d fwd(n);
+    fwd[0] = control_points_[0];
+    for (int i = 1; i < n; ++i) {
+        fwd[i] = (n * control_points_[i] - i * fwd[i - 1]) / (n - i);
+    }
+
+    // Backward solution (preserves right end)
+    PointVector2d bwd(n);
+    bwd[n - 1] = control_points_[n];
+    for (int i = n - 2; i >= 0; --i) {
+        bwd[i] = (n * control_points_[i + 1] - (n - i - 1) * bwd[i + 1]) / (i + 1.0);
+    }
+
+    // Average forward and backward solutions
+    PointVector2d avg(n);
+    for (int i = 0; i < n; ++i) {
+        avg[i] = 0.5 * (fwd[i] + bwd[i]);
+    }
+
+    return BezierCurve2d(avg);
+}
+
 // ============================================================================
 // BezierCurve3d Implementation
 // ============================================================================
@@ -183,6 +232,49 @@ Point3d BezierCurve3d::derivative(double t, int order) const {
     // Evaluate the order-th derivative Bezier curve at t using de Casteljau
     BezierCurve3d derivCurve(derivPoints);
     return derivCurve.deCasteljau(t);
+}
+
+BezierCurve3d BezierCurve3d::elevateDegree() const {
+    const int n = degree();
+    const int newN = n + 1;
+
+    PointVector3d newPoints;
+    newPoints.reserve(newN + 1);
+
+    newPoints.push_back(control_points_[0]);
+
+    for (int i = 1; i <= n; ++i) {
+        double alpha = static_cast<double>(i) / newN;
+        newPoints.push_back(alpha * control_points_[i - 1] + (1.0 - alpha) * control_points_[i]);
+    }
+
+    newPoints.push_back(control_points_[n]);
+
+    return BezierCurve3d(newPoints);
+}
+
+std::optional<BezierCurve3d> BezierCurve3d::reduceDegree() const {
+    const int n = degree();
+    if (n < 1) return std::nullopt;
+
+    PointVector3d fwd(n);
+    fwd[0] = control_points_[0];
+    for (int i = 1; i < n; ++i) {
+        fwd[i] = (n * control_points_[i] - i * fwd[i - 1]) / (n - i);
+    }
+
+    PointVector3d bwd(n);
+    bwd[n - 1] = control_points_[n];
+    for (int i = n - 2; i >= 0; --i) {
+        bwd[i] = (n * control_points_[i + 1] - (n - i - 1) * bwd[i + 1]) / (i + 1.0);
+    }
+
+    PointVector3d avg(n);
+    for (int i = 0; i < n; ++i) {
+        avg[i] = 0.5 * (fwd[i] + bwd[i]);
+    }
+
+    return BezierCurve3d(avg);
 }
 
 // ============================================================================

@@ -127,6 +127,63 @@ void BezierEditor::renderControlPanel() {
 
     ImGui::Separator();
 
+    // Degree elevation / reduction
+    ImGui::Text("Degree Operations:");
+    if (ImGui::Button("Elevate Degree")) {
+        *curve_ = curve_->elevateDegree();
+        showReducedDegreeWarning_ = false;
+        previewReducedCurve_.reset();
+    }
+    ImGui::SameLine();
+    if (curve_->degree() >= 2) {
+        if (ImGui::Button("Reduce Degree")) {
+            auto reduced = curve_->reduceDegree();
+            if (reduced) {
+                // Check approximation error by sampling
+                double maxError = 0.0;
+                const int samples = 100;
+                for (int i = 0; i <= samples; ++i) {
+                    double t = static_cast<double>(i) / samples;
+                    double err = (curve_->evaluate(t) - reduced->evaluate(t)).norm();
+                    maxError = std::max(maxError, err);
+                }
+                if (maxError < 1.0) {
+                    *curve_ = *reduced;
+                } else {
+                    // Show warning - curve would change too much
+                    showReducedDegreeWarning_ = true;
+                    reducedDegreeError_ = maxError;
+                    previewReducedCurve_ = std::make_unique<BezierCurve2d>(*reduced);
+                }
+            }
+        }
+    } else {
+        ImGui::BeginDisabled();
+        ImGui::Button("Reduce Degree");
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+        ImGui::TextDisabled("(need deg>=2)");
+    }
+    ImGui::Text("Current degree: %d", curve_->degree());
+
+    // Show warning if reduction would change the curve too much
+    if (showReducedDegreeWarning_) {
+        ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Max error: %.4f (threshold: 1.0)", reducedDegreeError_);
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Preview shown in red!");
+        if (ImGui::Button("Force Reduce Anyway")) {
+            *curve_ = *previewReducedCurve_;
+            showReducedDegreeWarning_ = false;
+            previewReducedCurve_.reset();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            showReducedDegreeWarning_ = false;
+            previewReducedCurve_.reset();
+        }
+    }
+
+    ImGui::Separator();
+
     // Reset button
     if (ImGui::Button("Reset to Default")) {
         PointVector2d defaultPoints;
@@ -250,6 +307,28 @@ void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
                 ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
                 ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
                 IM_COL32(0, 100, 255, 255), 2.0f
+            );
+        }
+    }
+
+    // Draw reduced degree preview curve (in red)
+    if (showReducedDegreeWarning_ && previewReducedCurve_) {
+        const int segPreview = 100;
+        for (int i = 0; i < segPreview; ++i) {
+            double t1 = static_cast<double>(i) / segPreview;
+            double t2 = static_cast<double>(i + 1) / segPreview;
+
+            Point2d p1 = previewReducedCurve_->evaluate(t1);
+            Point2d p2 = previewReducedCurve_->evaluate(t2);
+
+            float sx1, sy1, sx2, sy2;
+            worldToScreen(p1, sx1, sy1);
+            worldToScreen(p2, sx2, sy2);
+
+            drawList->AddLine(
+                ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
+                ImVec2(canvasPos.x + sx2, canvasPos.y + sy2),
+                IM_COL32(255, 60, 60, 255), 2.0f
             );
         }
     }
