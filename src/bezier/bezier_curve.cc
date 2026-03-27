@@ -71,9 +71,9 @@ Point2d BezierCurve2d::derivative(double t, int order) const {
         --curDeg;
     }
 
-    // Evaluate the order-th derivative Bezier curve at t
+    // Evaluate the order-th derivative Bezier curve at t using de Casteljau
     BezierCurve2d derivCurve(derivPoints);
-    return derivCurve.evaluate(t);
+    return derivCurve.deCasteljau(t);
 }
 
 std::pair<BezierCurve2d, BezierCurve2d> BezierCurve2d::subdivide(double t) const {
@@ -180,9 +180,9 @@ Point3d BezierCurve3d::derivative(double t, int order) const {
         --curDeg;
     }
 
-    // Evaluate the order-th derivative Bezier curve at t
+    // Evaluate the order-th derivative Bezier curve at t using de Casteljau
     BezierCurve3d derivCurve(derivPoints);
-    return derivCurve.evaluate(t);
+    return derivCurve.deCasteljau(t);
 }
 
 // ============================================================================
