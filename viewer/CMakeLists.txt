@@ -8,11 +8,17 @@ set(VIEWER_SOURCES
 # Framework sources
 set(FRAMEWORK_SOURCES
     framework/application.cc
+    framework/gl/camera.cc
+    framework/gl/renderer.cc
+    framework/gl/viewport.cc
 )
 
 set(FRAMEWORK_HEADERS
     framework/application.h
     framework/base/curve_editor.h
+    framework/gl/camera.h
+    framework/gl/renderer.h
+    framework/gl/viewport.h
 )
 
 # Bezier curve implementation
@@ -24,17 +30,28 @@ set(BEZIER_HEADERS
     impl/bezier/curve_editor.h
 )
 
+# Bezier surface implementation
+set(SURFACE_SOURCES
+    impl/bezier/surface_editor.cc
+)
+
+set(SURFACE_HEADERS
+    impl/bezier/surface_editor.h
+)
+
 # Collect all sources
 set(ALL_SOURCES
     ${VIEWER_SOURCES}
     ${FRAMEWORK_SOURCES}
     ${BEZIER_SOURCES}
+    ${SURFACE_SOURCES}
 )
 
 # Collect all headers
 set(ALL_HEADERS
     ${FRAMEWORK_HEADERS}
     ${BEZIER_HEADERS}
+    ${SURFACE_HEADERS}
 )
 
 # Create viewer executable
@@ -49,6 +66,7 @@ target_link_libraries(cagd_viewer PRIVATE
     imgui::imgui
     glfw
     OpenGL::GL
+    glad::glad
 )
 
 # Set include directories
@@ -59,7 +77,7 @@ target_include_directories(cagd_viewer PRIVATE
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(cagd_viewer PRIVATE /W4)
+    target_compile_options(cagd_viewer PRIVATE /W4 /FS)
 else()
     target_compile_options(cagd_viewer PRIVATE -Wall -Wextra -Wpedantic)
 endif()

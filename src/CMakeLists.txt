@@ -3,11 +3,13 @@
 # Common utility sources
 set(COMMON_SOURCES
     common/common.cc
+    common/glmath.cc
 )
 
 set(COMMON_HEADERS
     cagd_types.h
     common/common.h
+    common/glmath.h
 )
 
 # Bezier curve sources
@@ -19,16 +21,27 @@ set(BEZIER_HEADERS
     bezier/bezier_curve.h
 )
 
+# Bezier surface sources
+set(SURFACE_SOURCES
+    bezier/bezier_surface.cc
+)
+
+set(SURFACE_HEADERS
+    bezier/bezier_surface.h
+)
+
 # Collect all sources
 set(CAGD_SOURCES
     ${COMMON_SOURCES}
     ${BEZIER_SOURCES}
+    ${SURFACE_SOURCES}
 )
 
 # Collect all headers
 set(CAGD_HEADERS
     ${COMMON_HEADERS}
     ${BEZIER_HEADERS}
+    ${SURFACE_HEADERS}
 )
 
 # Create CAGD core library

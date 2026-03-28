@@ -23,7 +23,7 @@ Point3d midpoint(const Point3d& p1, const Point3d& p2);
 Point2d midpoint(const Point2d& p1, const Point2d& p2);
 
 // ============================================================================
-// Matrix Transformations
+// Matrix Transformations (3x3)
 // ============================================================================
 
 // Create a rotation matrix around X-axis

@@ -1,9 +1,9 @@
 #pragma once
 
-// Main application class for managing curve editors
+// Main application class for managing curve/surface editors
 
 #include "viewer/framework/base/curve_editor.h"
-#include "viewer/impl/bezier/curve_editor.h"
+#include "viewer/impl/bezier/surface_editor.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -16,7 +16,7 @@ public:
     Application();
     ~Application() = default;
 
-    // Initialize the application
+    // Initialize the application (call after OpenGL context is created)
     void initialize();
 
     // Render the main UI
@@ -33,25 +33,24 @@ public:
     void setScreenSize(int width, int height);
 
 private:
-    // Render curve selector (top left)
-    void renderCurveSelector();
+    // Render editor selector (top left)
+    void renderEditorSelector();
 
-    // Render canvas area (right side)
-    void renderCanvas();
+    // Render the current editor
+    void renderCurrentEditor();
 
-    // Available editors
-    std::vector<std::unique_ptr<CurveEditor>> editors_;
+    // 2D curve editors
+    std::vector<std::unique_ptr<CurveEditor>> curveEditors_;
 
-    // Current editor index
-    int currentEditorIndex_;
+    // 3D surface editor
+    std::unique_ptr<SurfaceEditor> surfaceEditor_;
+
+    // Current mode: 0..n-1 = curve editors, -1 = surface editor
+    int currentMode_;
 
     // Screen dimensions
     int screenWidth_;
     int screenHeight_;
-
-    // Canvas area
-    int canvasX_, canvasY_;
-    int canvasWidth_, canvasHeight_;
 };
 
 } // namespace cagd

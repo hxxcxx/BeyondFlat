@@ -1,4 +1,5 @@
 #include "viewer/framework/application.h"
+#include "viewer/impl/bezier/curve_editor.h"
 #include <imgui.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -6,152 +7,141 @@
 namespace cagd {
 
 Application::Application()
-    : currentEditorIndex_(0)
+    : currentMode_(0)
     , screenWidth_(1280)
-    , screenHeight_(720)
-    , canvasX_(350)
-    , canvasY_(0)
-    , canvasWidth_(930)
-    , canvasHeight_(720) {
+    , screenHeight_(720) {
 
-    // Create editors
-    editors_.push_back(std::make_unique<BezierEditor>());
+    // Create 2D curve editors
+    curveEditors_.push_back(std::make_unique<BezierEditor>());
 
-    // Initialize all editors
-    for (auto& editor : editors_) {
-        editor->setScreenSize(screenWidth_, screenHeight_);
-        editor->initialize();
-    }
+    // Create 3D surface editor
+    surfaceEditor_ = std::make_unique<SurfaceEditor>();
 }
 
 void Application::initialize() {
-    // Already initialized in constructor
+    // Initialize all 2D curve editors
+    for (auto& editor : curveEditors_) {
+        editor->setScreenSize(screenWidth_, screenHeight_);
+        editor->initialize();
+    }
+
+    // Initialize 3D surface editor
+    surfaceEditor_->initialize();
 }
 
 void Application::render() {
-    // Render curve selector (top left)
-    renderCurveSelector();
-
-    // Render current editor's control panel (bottom left)
-    editors_[currentEditorIndex_]->renderControlPanel();
-
-    // Render canvas area (right side)
-    renderCanvas();
+    renderEditorSelector();
+    renderCurrentEditor();
 }
 
-void Application::renderCurveSelector() {
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(350, 200), ImGuiCond_Always);
+void Application::renderEditorSelector() {
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 100), ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Curve Selector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Editor Selector", nullptr, ImGuiWindowFlags_NoCollapse);
 
-    ImGui::Text("Select Curve Type:");
+    ImGui::Text("Select Editor:");
     ImGui::Separator();
 
-    for (size_t i = 0; i < editors_.size(); ++i) {
-        if (ImGui::RadioButton(editors_[i]->getName().c_str(), currentEditorIndex_ == static_cast<int>(i))) {
-            currentEditorIndex_ = static_cast<int>(i);
+    // 2D curve editors
+    for (size_t i = 0; i < curveEditors_.size(); ++i) {
+        int mode = static_cast<int>(i);
+        if (ImGui::RadioButton(curveEditors_[i]->getName().c_str(), currentMode_ == mode)) {
+            currentMode_ = mode;
         }
-
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("%s", editors_[i]->getDescription().c_str());
+            ImGui::SetTooltip("%s", curveEditors_[i]->getDescription().c_str());
         }
+    }
+
+    // 3D surface editor
+    int surfaceMode = -1;
+    if (ImGui::RadioButton(surfaceEditor_->getName().c_str(), currentMode_ == surfaceMode)) {
+        currentMode_ = surfaceMode;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("%s", surfaceEditor_->getDescription().c_str());
     }
 
     ImGui::End();
 }
 
-void Application::renderCanvas() {
-    // Save current ImGui context
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+void Application::renderCurrentEditor() {
+    if (currentMode_ >= 0 && currentMode_ < static_cast<int>(curveEditors_.size())) {
+        // 2D curve editor mode
+        auto& editor = curveEditors_[currentMode_];
+        editor->renderControlPanel();
 
-    // Create canvas window
-    ImGui::SetNextWindowPos(ImVec2(350, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(930, 720), ImGuiCond_Always);
+        // Render 2D canvas (same as before)
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 
-    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+        ImGui::SetNextWindowPos(ImVec2(330, 0), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
-    // Get canvas position and size
-    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+        ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+        ImVec2 canvasSize = ImGui::GetContentRegionAvail();
 
-    // Update canvas dimensions
-    canvasX_ = static_cast<int>(canvasPos.x);
-    canvasY_ = static_cast<int>(canvasPos.y);
-    canvasWidth_ = static_cast<int>(canvasSize.x);
-    canvasHeight_ = static_cast<int>(canvasSize.y);
+        editor->setScreenSize(static_cast<int>(canvasSize.x), static_cast<int>(canvasSize.y));
 
-    // Update the current editor's canvas size
-    editors_[currentEditorIndex_]->setScreenSize(canvasWidth_, canvasHeight_);
+        ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
 
-    // Create invisible button for mouse interaction
-    ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+        bool isHovered = ImGui::IsItemHovered();
+        if (isHovered) {
+            ImVec2 mousePos = ImGui::GetMousePos();
+            double canvasMouseX = mousePos.x - canvasPos.x;
+            double canvasMouseY = mousePos.y - canvasPos.y;
 
-    // Check if mouse is hovering over canvas
-    bool isHovered = ImGui::IsItemHovered();
-
-    // Only handle mouse input when hovering over canvas
-    if (isHovered) {
-        // Get mouse position relative to canvas
-        ImVec2 mousePos = ImGui::GetMousePos();
-        double canvasMouseX = mousePos.x - canvasPos.x;
-        double canvasMouseY = mousePos.y - canvasPos.y;
-
-        // Handle mouse input
-        if (ImGui::IsMouseClicked(0)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
-        } else if (ImGui::IsMouseReleased(0)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+            if (ImGui::IsMouseClicked(0)) {
+                editor->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+            } else if (ImGui::IsMouseReleased(0)) {
+                editor->handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+            }
+            if (ImGui::IsMouseClicked(1)) {
+                editor->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+            } else if (ImGui::IsMouseReleased(1)) {
+                editor->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+            }
+            if (ImGui::IsMouseDragging(0)) {
+                editor->handleMousePosition(canvasMouseX, canvasMouseY);
+            }
         }
 
-        if (ImGui::IsMouseClicked(1)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
-        } else if (ImGui::IsMouseReleased(1)) {
-            editors_[currentEditorIndex_]->handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
-        }
+        editor->renderCanvas(canvasPos);
 
-        if (ImGui::IsMouseDragging(0)) {
-            editors_[currentEditorIndex_]->handleMousePosition(canvasMouseX, canvasMouseY);
-        }
+        ImGui::End();
+        ImGui::PopStyleVar(2);
+    } else if (currentMode_ == -1) {
+        // 3D surface editor mode
+        surfaceEditor_->render();
     }
-
-    // Render the curve using ImGui draw list
-    editors_[currentEditorIndex_]->renderCanvas(canvasPos);
-
-    ImGui::End();
-
-    ImGui::PopStyleVar(2);
 }
 
 void Application::handleMouseButton(int button, int action, int mods) {
-    // Get current mouse position and convert to canvas coordinates
-    double xpos, ypos;
-    glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
-
-    // Adjust to canvas coordinates
-    double canvasX = xpos - canvasX_;
-    double canvasY = ypos - canvasY_;
-
-    editors_[currentEditorIndex_]->handleMouseButton(button, action, mods, canvasX, canvasY);
+    if (currentMode_ >= 0 && currentMode_ < static_cast<int>(curveEditors_.size())) {
+        double xpos, ypos;
+        glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
+        curveEditors_[currentMode_]->handleMouseButton(button, action, mods, xpos, ypos);
+    }
+    // 3D editor handles its own mouse input through ImGui
 }
 
 void Application::handleMousePosition(double xpos, double ypos) {
-    // Adjust mouse position to canvas coordinates
-    double canvasX = xpos - canvasX_;
-    double canvasY = ypos - canvasY_;
-    editors_[currentEditorIndex_]->handleMousePosition(canvasX, canvasY);
+    if (currentMode_ >= 0 && currentMode_ < static_cast<int>(curveEditors_.size())) {
+        curveEditors_[currentMode_]->handleMousePosition(xpos, ypos);
+    }
 }
 
 void Application::handleKey(int key, int action, int mods) {
-    editors_[currentEditorIndex_]->handleKey(key, action, mods);
+    if (currentMode_ >= 0 && currentMode_ < static_cast<int>(curveEditors_.size())) {
+        curveEditors_[currentMode_]->handleKey(key, action, mods);
+    }
 }
 
 void Application::setScreenSize(int width, int height) {
     screenWidth_ = width;
     screenHeight_ = height;
-
-    for (auto& editor : editors_) {
+    for (auto& editor : curveEditors_) {
         editor->setScreenSize(width, height);
     }
 }
