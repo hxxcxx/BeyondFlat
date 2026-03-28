@@ -86,7 +86,7 @@ void BezierEditor::render() {
         }
     }
 
-    renderCanvas();
+    renderCanvas(canvasPos);
 
     ImGui::End();
     ImGui::PopStyleVar(2);
@@ -266,11 +266,9 @@ void BezierEditor::renderControlPanel() {
     ImGui::End();
 }
 
-void BezierEditor::renderCanvas() {
+void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     if (!drawList || !curve_) return;
-
-    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
 
     // Get control points
     PointVector2d points = curve_->controlPoints();

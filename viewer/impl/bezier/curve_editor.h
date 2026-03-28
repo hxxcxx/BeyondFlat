@@ -29,7 +29,7 @@ public:
 
 private:
     // Render 2D canvas window
-    void renderCanvas();
+    void renderCanvas(const ImVec2& canvasPos);
 
     // Render control panel
     void renderControlPanel();
