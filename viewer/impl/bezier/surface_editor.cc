@@ -29,7 +29,20 @@ void SurfaceEditor::initialize() {
 
 void SurfaceEditor::render() {
     renderControlPanel();
+
+    // Render into the same "Canvas" window as 2D editors
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImGui::SetNextWindowPos(ImVec2(330, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(displaySize.x - 330, displaySize.y), ImGuiCond_Always);
+    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
     renderViewport();
+
+    ImGui::End();
+    ImGui::PopStyleVar(2);
 }
 
 void SurfaceEditor::renderControlPanel() {
@@ -118,16 +131,14 @@ void SurfaceEditor::renderControlPanel() {
 void SurfaceEditor::renderViewport() {
     if (!viewport_) return;
 
-    float vpWidth = ImGui::GetIO().DisplaySize.x - 330;
-    float vpHeight = ImGui::GetIO().DisplaySize.y;
+    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+    if (canvasSize.x < 100 || canvasSize.y < 100) return;
 
-    if (vpWidth < 100 || vpHeight < 100) return;
+    viewport_->begin("##viewport3d", canvasSize);
+    renderScene();
 
-    ImGui::SetNextWindowPos(ImVec2(330, 0));
-    ImGui::SetNextWindowSize(ImVec2(vpWidth, vpHeight));
-
-    if (viewport_->begin("##viewport3d", ImVec2(vpWidth, vpHeight))) {
-        renderScene();
+    // Input handling only when hovered
+    if (viewport_->isHovered()) {
 
         // Handle point picking on mouse click
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !isDraggingPoint_) {

@@ -48,6 +48,7 @@ struct Viewport3D {
     // Viewport rectangle (screen coordinates)
     struct Rect { int x, y, w, h; };
     Rect rect() const { return { vpX_, vpY_, vpWidth_, vpHeight_ }; }
+    bool isHovered() const { return isHovered_; }
 
 private:
     OrbitCamera camera_;
