@@ -14,34 +14,26 @@ public:
     BezierEditor();
     ~BezierEditor() = default;
 
-    // Initialize the editor
+    // EditorBase interface
     void initialize() override;
-
-    // Render the GUI and curve
     void render() override;
-
-    // Render control panel (left side)
-    void renderControlPanel() override;
-
-    // Render canvas using ImGui draw list
-    void renderCanvas(const ImVec2& canvasPos) override;
-
-    // Handle mouse input
-    void handleMouseButton(int button, int action, int mods, double xpos, double ypos) override;
-    void handleMousePosition(double xpos, double ypos) override;
-
-    // Get editor name
     std::string getName() const override { return "Bezier Curve"; }
-
-    // Get description
     std::string getDescription() const override {
         return "Parametric curve defined by control points using Bernstein polynomials";
     }
 
-    // Handle keyboard input
+    // CurveEditor 2D input interface
+    void handleMouseButton(int button, int action, int mods, double xpos, double ypos) override;
+    void handleMousePosition(double xpos, double ypos) override;
     void handleKey(int key, int action, int mods) override;
 
 private:
+    // Render 2D canvas window
+    void renderCanvas();
+
+    // Render control panel
+    void renderControlPanel();
+
     // Check if mouse is over a control point
     int findControlPoint(double mouseX, double mouseY);
 

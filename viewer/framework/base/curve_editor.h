@@ -1,30 +1,18 @@
 #pragma once
 
-// Base class for curve editors
+// Base class for 2D curve editors
 
+#include "viewer/framework/base/editor_base.h"
 #include <imgui.h>
 #include "src/cagd_types.h"
 #include <memory>
-#include <string>
 
 namespace cagd {
 
-// Abstract base class for curve editors
-class CurveEditor {
+// Abstract base class for 2D curve editors
+class CurveEditor : public EditorBase {
 public:
-    virtual ~CurveEditor() = default;
-
-    // Initialize the editor
-    virtual void initialize() = 0;
-
-    // Render the GUI and curve
-    virtual void render() = 0;
-
-    // Render control panel (left side)
-    virtual void renderControlPanel() = 0;
-
-    // Render canvas (right side) using ImGui draw list
-    virtual void renderCanvas(const ImVec2& canvasPos) = 0;
+    ~CurveEditor() override = default;
 
     // Handle mouse input
     virtual void handleMouseButton(int button, int action, int mods, double xpos, double ypos) = 0;
@@ -33,14 +21,8 @@ public:
     // Handle keyboard input (optional, default implementation does nothing)
     virtual void handleKey(int key, int action, int mods) {}
 
-    // Get editor name
-    virtual std::string getName() const = 0;
-
-    // Get description
-    virtual std::string getDescription() const = 0;
-
     // Set screen dimensions
-    void setScreenSize(int width, int height) {
+    void setScreenSize(int width, int height) override {
         screenWidth_ = width;
         screenHeight_ = height;
     }

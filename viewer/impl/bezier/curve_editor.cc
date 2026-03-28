@@ -49,7 +49,47 @@ void BezierEditor::initialize() {
 }
 
 void BezierEditor::render() {
-    // Nothing to render here - all rendering is done in renderCanvas()
+    renderControlPanel();
+
+    // Render 2D canvas
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+
+    ImGui::SetNextWindowPos(ImVec2(330, 0), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+
+    setScreenSize(static_cast<int>(canvasSize.x), static_cast<int>(canvasSize.y));
+
+    ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+
+    bool isHovered = ImGui::IsItemHovered();
+    if (isHovered) {
+        ImVec2 mousePos = ImGui::GetMousePos();
+        double canvasMouseX = mousePos.x - canvasPos.x;
+        double canvasMouseY = mousePos.y - canvasPos.y;
+
+        if (ImGui::IsMouseClicked(0)) {
+            handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+        } else if (ImGui::IsMouseReleased(0)) {
+            handleMouseButton(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+        }
+        if (ImGui::IsMouseClicked(1)) {
+            handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS, 0, canvasMouseX, canvasMouseY);
+        } else if (ImGui::IsMouseReleased(1)) {
+            handleMouseButton(GLFW_MOUSE_BUTTON_RIGHT, GLFW_RELEASE, 0, canvasMouseX, canvasMouseY);
+        }
+        if (ImGui::IsMouseDragging(0)) {
+            handleMousePosition(canvasMouseX, canvasMouseY);
+        }
+    }
+
+    renderCanvas();
+
+    ImGui::End();
+    ImGui::PopStyleVar(2);
 }
 
 void BezierEditor::renderControlPanel() {
@@ -226,9 +266,11 @@ void BezierEditor::renderControlPanel() {
     ImGui::End();
 }
 
-void BezierEditor::renderCanvas(const ImVec2& canvasPos) {
+void BezierEditor::renderCanvas() {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     if (!drawList || !curve_) return;
+
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
 
     // Get control points
     PointVector2d points = curve_->controlPoints();

@@ -3,6 +3,7 @@
 // Bezier Surface 3D Editor
 // Interactive editor for tensor-product Bezier surfaces in 3D
 
+#include "viewer/framework/base/editor_base.h"
 #include "src/bezier/bezier_surface.h"
 #include "viewer/framework/gl/viewport.h"
 #include <memory>
@@ -10,22 +11,16 @@
 
 namespace cagd {
 
-class SurfaceEditor {
+class SurfaceEditor : public EditorBase {
 public:
     SurfaceEditor();
     ~SurfaceEditor() = default;
 
-    // Initialize
-    void initialize();
-
-    // Render the full editor (control panel + viewport)
-    void render();
-
-    // Get editor name
-    std::string getName() const { return "Bezier Surface"; }
-
-    // Get description
-    std::string getDescription() const {
+    // EditorBase interface
+    void initialize() override;
+    void render() override;
+    std::string getName() const override { return "Bezier Surface"; }
+    std::string getDescription() const override {
         return "Tensor-product Bezier surface defined by a grid of 3D control points";
     }
 
