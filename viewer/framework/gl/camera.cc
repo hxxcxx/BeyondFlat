@@ -9,9 +9,9 @@ namespace cagd {
 
 OrbitCamera::OrbitCamera()
     : target_(0.0, 0.0, 0.0)
-    , yaw_(0.4)
-    , pitch_(0.5)
-    , distance_(5.0)
+    , yaw_(0.0)
+    , pitch_(1.0)
+    , distance_(12.0)
     , fovDeg_(45.0)
     , aspect_(16.0 / 9.0)
     , nearPlane_(0.1)

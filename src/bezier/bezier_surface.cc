@@ -151,7 +151,7 @@ Mesh BezierSurface::generateMesh(int resolutionU, int resolutionV) const {
             Point3d pos = deCasteljau(u, v);
             Vector3d norm = normal(u, v);
 
-            mesh.vertices.push_back(Vertex(pos, norm, Color4f(0.3f, 0.5f, 0.8f, 1.0f).toABGR()));
+            mesh.vertices.push_back(Vertex(pos, norm, Color4f(0.3f, 0.75f, 0.95f, 1.0f).toABGR()));
         }
     }
 
@@ -183,7 +183,7 @@ Mesh BezierSurface::generateControlNet() const {
     Mesh mesh;
     int rows = numRows();
     int cols = numCols();
-    uint32_t color = Color4f(1.0f, 0.65f, 0.0f, 1.0f).toABGR();
+    uint32_t color = Color4f(1.0f, 0.9f, 0.2f, 1.0f).toABGR();
     Vector3d up(0, 0, 1);
 
     // Lines along u direction (each row)

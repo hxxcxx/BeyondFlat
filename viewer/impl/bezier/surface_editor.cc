@@ -37,7 +37,7 @@ void SurfaceEditor::render() {
     ImVec2 displaySize = ImGui::GetIO().DisplaySize;
     ImGui::SetNextWindowPos(ImVec2(330, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(displaySize.x - 330, displaySize.y), ImGuiCond_Always);
-    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Canvas", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
 
     renderViewport();
 
@@ -155,6 +155,7 @@ void SurfaceEditor::renderViewport() {
             if (picked.first >= 0) {
                 selectedPoint_ = picked;
                 isDraggingPoint_ = true;
+                viewport_->setBlockRotation(true);
             } else {
                 selectedPoint_ = {-1, -1};
                 isDraggingPoint_ = false;
@@ -163,6 +164,7 @@ void SurfaceEditor::renderViewport() {
 
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
             isDraggingPoint_ = false;
+            viewport_->setBlockRotation(false);
         }
 
         // Handle dragging selected control point

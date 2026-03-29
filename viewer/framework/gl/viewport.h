@@ -50,6 +50,9 @@ struct Viewport3D {
     Rect rect() const { return { vpX_, vpY_, vpWidth_, vpHeight_ }; }
     bool isHovered() const { return isHovered_; }
 
+    // Block left-drag camera rotation (used when dragging control points)
+    void setBlockRotation(bool block) { blockRotation_ = block; }
+
 private:
     OrbitCamera camera_;
     GLRenderer renderer_;
@@ -63,6 +66,7 @@ private:
     bool isHovered_;
     bool isDraggingRotate_;
     bool isDraggingPan_;
+    bool blockRotation_;
     ImVec2 lastMousePos_;
 };
 

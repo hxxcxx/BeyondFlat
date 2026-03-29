@@ -209,9 +209,9 @@ void GLRenderer::drawMesh(const Mesh& mesh) {
     setUniformMat4(uniforms_.viewProj, viewProj_);
     Matrix4d identity = Matrix4d::Identity();
     setUniformMat4(uniforms_.model, identity);
-    glUniform3f(uniforms_.lightDir, 0.3f, 0.6f, 1.0f);
-    glUniform3f(uniforms_.ambientColor, 0.8f, 0.85f, 0.9f);
-    glUniform3f(uniforms_.diffuseColor, 1.0f, 1.0f, 1.0f);
+    glUniform3f(uniforms_.lightDir, 0.0f, 1.0f, 0.0f);
+    glUniform3f(uniforms_.ambientColor, 1.0f, 1.0f, 1.0f);
+    glUniform3f(uniforms_.diffuseColor, 0.0f, 0.0f, 0.0f);
     glUniform1i(uniforms_.useUniformColor, 0);
     glUniform1i(uniforms_.useVertexColor, 1);
     uploadAndDraw(mesh, GL_TRIANGLES, shaderProgram_);
@@ -318,15 +318,15 @@ void GLRenderer::drawLine(const Vector3d& from, const Vector3d& to, uint32_t col
 }
 
 void GLRenderer::drawAxes(float length) {
-    drawLine(Vector3d::Zero(), Vector3d(length, 0, 0), Color4f(1.0f, 0.3f, 0.3f, 1).toABGR());
-    drawLine(Vector3d::Zero(), Vector3d(0, length, 0), Color4f(0.3f, 1.0f, 0.3f, 1).toABGR());
-    drawLine(Vector3d::Zero(), Vector3d(0, 0, length), Color4f(0.3f, 0.5f, 1.0f, 1).toABGR());
+    drawLine(Vector3d::Zero(), Vector3d(length, 0, 0), Color4f(1.0f, 0.2f, 0.2f, 1).toABGR());
+    drawLine(Vector3d::Zero(), Vector3d(0, length, 0), Color4f(0.2f, 1.0f, 0.2f, 1).toABGR());
+    drawLine(Vector3d::Zero(), Vector3d(0, 0, length), Color4f(0.2f, 0.2f, 1.0f, 1).toABGR());
 }
 
 void GLRenderer::drawGrid(float size, int divisions) {
     float step = size / divisions;
-    uint32_t color = Color4f(0.5f, 0.5f, 0.6f, 0.6f).toABGR();
-    uint32_t axisColor = Color4f(0.7f, 0.7f, 0.8f, 0.8f).toABGR();
+    uint32_t color = Color4f(0.7f, 0.7f, 0.75f, 0.8f).toABGR();
+    uint32_t axisColor = Color4f(0.9f, 0.9f, 0.95f, 0.9f).toABGR();
     for (int i = -divisions; i <= divisions; ++i) {
         float p = i * step;
         uint32_t c = (i == 0) ? axisColor : color;

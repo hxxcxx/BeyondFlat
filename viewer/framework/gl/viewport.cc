@@ -14,6 +14,7 @@ Viewport3D::Viewport3D()
     , isHovered_(false)
     , isDraggingRotate_(false)
     , isDraggingPan_(false)
+    , blockRotation_(false)
     , lastMousePos_(0, 0) {}
 
 void Viewport3D::resize(int x, int y, int width, int height) {
@@ -28,7 +29,7 @@ bool Viewport3D::begin(const char* label, const ImVec2& size) {
     // Create an ImGui child window for the viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     if (!ImGui::BeginChild(label, size, ImGuiChildFlags_Borders,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBackground)) {
         ImGui::PopStyleVar();
         return false;
     }
@@ -112,8 +113,8 @@ void Viewport3D::handleInput() {
     ImVec2 mousePos = ImGui::GetMousePos();
     ImVec2 delta(mousePos.x - lastMousePos_.x, mousePos.y - lastMousePos_.y);
 
-    // Left drag: rotate
-    if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGui::GetIO().WantCaptureMouse) {
+    // Left drag: rotate (blocked when dragging control points)
+    if (!blockRotation_ && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         camera_.onMouseDragRotate(delta.x, delta.y);
         isDraggingRotate_ = true;
     } else {
@@ -129,16 +130,14 @@ void Viewport3D::handleInput() {
     }
 
     // Right drag: pan (alternative)
-    if (ImGui::IsMouseDragging(ImGuiMouseButton_Right) && !ImGui::GetIO().WantCaptureMouse) {
+    if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
         camera_.onMouseDragPan(delta.x, delta.y);
     }
 
     // Scroll: zoom
-    if (ImGui::IsItemHovered()) {
-        float wheel = ImGui::GetIO().MouseWheel;
-        if (wheel != 0) {
-            camera_.onMouseScroll(static_cast<double>(wheel));
-        }
+    float wheel = ImGui::GetIO().MouseWheel;
+    if (wheel != 0) {
+        camera_.onMouseScroll(static_cast<double>(wheel));
     }
 
     lastMousePos_ = mousePos;

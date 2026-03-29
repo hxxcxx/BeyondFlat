@@ -122,7 +122,7 @@ int main() {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.05f, 0.05f, 0.08f, 1.00f);
+        glClearColor(0.4f, 0.4f, 0.45f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Render the application UI (includes 3D scene and ImGui UI)
