@@ -54,6 +54,7 @@ private:
     OrbitCamera camera_;
     GLRenderer renderer_;
     bool rendererInitialized_;
+    bool beginSucceeded_;
 
     // Viewport position and size (screen pixels)
     int vpX_, vpY_, vpWidth_, vpHeight_;

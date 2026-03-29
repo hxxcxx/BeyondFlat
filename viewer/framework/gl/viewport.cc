@@ -10,6 +10,7 @@ namespace cagd {
 Viewport3D::Viewport3D()
     : vpX_(0), vpY_(0), vpWidth_(0), vpHeight_(0)
     , rendererInitialized_(false)
+    , beginSucceeded_(false)
     , isHovered_(false)
     , isDraggingRotate_(false)
     , isDraggingPan_(false)
@@ -26,8 +27,11 @@ void Viewport3D::resize(int x, int y, int width, int height) {
 bool Viewport3D::begin(const char* label, const ImVec2& size) {
     // Create an ImGui child window for the viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::BeginChild(label, size, ImGuiChildFlags_Borders,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    if (!ImGui::BeginChild(label, size, ImGuiChildFlags_Borders,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+        ImGui::PopStyleVar();
+        return false;
+    }
 
     // Get the actual position and size of the child window's content area
     ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -70,12 +74,16 @@ bool Viewport3D::begin(const char* label, const ImVec2& size) {
     // Update camera and renderer
     renderer_.setCamera(camera_);
     renderer_.setViewport(newW, newH);
+    glClear(GL_DEPTH_BUFFER_BIT);
     renderer_.beginFrame();
 
     // Handle input
     handleInput();
 
-    return isHovered_;
+    beginSucceeded_ = true;
+    // Always return true if we got here - rendering should happen regardless of hover state
+    // The hover state is still tracked for input handling
+    return true;
 }
 
 void Viewport3D::end() {
@@ -87,8 +95,11 @@ void Viewport3D::end() {
     glfwGetFramebufferSize(win, &winW, &winH);
     glViewport(0, 0, winW, winH);
 
-    ImGui::EndChild();
-    ImGui::PopStyleVar();
+    if (beginSucceeded_) {
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
+        beginSucceeded_ = false;
+    }
 }
 
 void Viewport3D::handleInput() {

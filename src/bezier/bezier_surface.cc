@@ -151,7 +151,7 @@ Mesh BezierSurface::generateMesh(int resolutionU, int resolutionV) const {
             Point3d pos = deCasteljau(u, v);
             Vector3d norm = normal(u, v);
 
-            mesh.vertices.push_back(Vertex(pos, norm, Color4f(0.4f, 0.7f, 1.0f, 1.0f).toABGR()));
+            mesh.vertices.push_back(Vertex(pos, norm, Color4f(0.3f, 0.5f, 0.8f, 1.0f).toABGR()));
         }
     }
 

@@ -132,9 +132,13 @@ void SurfaceEditor::renderViewport() {
     if (!viewport_) return;
 
     ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-    if (canvasSize.x < 100 || canvasSize.y < 100) return;
 
-    viewport_->begin("##viewport3d", canvasSize);
+    bool begin_ok = viewport_->begin("##viewport3d", canvasSize);
+    if (!begin_ok) {
+        viewport_->end();
+        return;
+    }
+
     renderScene();
 
     // Input handling only when hovered
@@ -212,6 +216,9 @@ void SurfaceEditor::renderScene() {
 
     GLRenderer& r = viewport_->renderer();
 
+    fprintf(stderr, "[DEBUG] renderScene: surface=%p, meshDirty=%d, showSurface=%d, showAxes=%d, showGrid=%d, showCP=%d\n",
+            (void*)surface_.get(), meshDirty_, showSurface_, showAxes_, showGrid_, showControlPoints_);
+
     // Rebuild mesh if dirty
     if (meshDirty_) {
         surfaceMesh_ = surface_->generateMesh(resolutionU_, resolutionV_);
@@ -221,12 +228,12 @@ void SurfaceEditor::renderScene() {
 
     // Draw grid
     if (showGrid_) {
-        r.drawGrid(5.0f, 10);
+        r.drawGrid(10.0f, 20);
     }
 
     // Draw axes
     if (showAxes_) {
-        r.drawAxes(2.5f);
+        r.drawAxes(5.0f);
     }
 
     // Draw surface
@@ -253,7 +260,7 @@ void SurfaceEditor::renderScene() {
                 Point3d p = surface_->controlPoint(j, i);
                 bool isSelected = (j == selectedPoint_.first && i == selectedPoint_.second);
                 uint32_t col = isSelected ? selectedColor : normalColor;
-                float size = isSelected ? 10.0f : 7.0f;
+                float size = isSelected ? 15.0f : 12.0f;
                 r.drawPointColored(p, size, col);
             }
         }

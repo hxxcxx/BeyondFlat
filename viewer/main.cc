@@ -118,18 +118,18 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Render the application UI
-        g_app->render();
-
-        // Rendering
-        ImGui::Render();
+        // Clear buffers before rendering
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.12f, 0.12f, 0.16f, 1.00f);
+        glClearColor(0.05f, 0.05f, 0.08f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Render the application UI (includes 3D scene and ImGui UI)
+        g_app->render();
+
         // Render ImGui UI
+        ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
