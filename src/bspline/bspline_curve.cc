@@ -68,17 +68,14 @@ Point2d BSplineCurve2d::deBoor(double t) const {
     const int n = static_cast<int>(control_points_.size()) - 1;
     const int p = degree_;
 
-    // Find knot span
-    int k = p;
-    for (int i = p; i < n; ++i) {
-        if (t >= knots_[i] && t < knots_[i + 1]) {
+    // Find knot span: k such that knots_[k] <= t < knots_[k+1]
+    // Valid range: k = p, p+1, ..., n
+    int k = n;
+    for (int i = p; i <= n; ++i) {
+        if (t < knots_[i + 1]) {
             k = i;
             break;
         }
-    }
-    // Handle endpoint case
-    if (t >= knots_[n + 1]) {
-        k = n;
     }
 
     // Copy control points for the de Boor algorithm
@@ -158,10 +155,10 @@ PointVector2d BSplineCurve2d::insertKnot(double t, int multiplicity) {
     const int n = static_cast<int>(control_points_.size()) - 1;
     const int p = degree_;
 
-    // Find knot span
-    int k = p;
-    for (int i = p; i < n; ++i) {
-        if (t >= knots_[i] && t < knots_[i + 1]) {
+    // Find knot span: k such that knots_[k] <= t < knots_[k+1]
+    int k = n;
+    for (int i = p; i <= n; ++i) {
+        if (t < knots_[i + 1]) {
             k = i;
             break;
         }
@@ -270,15 +267,13 @@ Point3d BSplineCurve3d::deBoor(double t) const {
     const int n = static_cast<int>(control_points_.size()) - 1;
     const int p = degree_;
 
-    int k = p;
-    for (int i = p; i < n; ++i) {
-        if (t >= knots_[i] && t < knots_[i + 1]) {
+    // Find knot span: k such that knots_[k] <= t < knots_[k+1]
+    int k = n;
+    for (int i = p; i <= n; ++i) {
+        if (t < knots_[i + 1]) {
             k = i;
             break;
         }
-    }
-    if (t >= knots_[n + 1]) {
-        k = n;
     }
 
     std::vector<Point3d> d(p + 1);
@@ -342,9 +337,10 @@ PointVector3d BSplineCurve3d::insertKnot(double t, int multiplicity) {
     const int n = static_cast<int>(control_points_.size()) - 1;
     const int p = degree_;
 
-    int k = p;
-    for (int i = p; i < n; ++i) {
-        if (t >= knots_[i] && t < knots_[i + 1]) {
+    // Find knot span: k such that knots_[k] <= t < knots_[k+1]
+    int k = n;
+    for (int i = p; i <= n; ++i) {
+        if (t < knots_[i + 1]) {
             k = i;
             break;
         }
