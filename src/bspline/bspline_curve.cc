@@ -21,7 +21,8 @@ BSplineCurve2d::BSplineCurve2d(int degree, const PointVector2d& controlPoints,
 
 void BSplineCurve2d::setControlPoints(const PointVector2d& points) {
     control_points_ = points;
-    if (knots_.empty()) {
+    // Recompute knot vector if control point count changed
+    if (static_cast<int>(points.size()) != knotCount() - degree_ - 1) {
         knots_ = clampedKnotVector(degree_, static_cast<int>(points.size()));
     }
 }
@@ -219,7 +220,8 @@ BSplineCurve3d::BSplineCurve3d(int degree, const PointVector3d& controlPoints,
 
 void BSplineCurve3d::setControlPoints(const PointVector3d& points) {
     control_points_ = points;
-    if (knots_.empty()) {
+    // Recompute knot vector if control point count changed
+    if (static_cast<int>(points.size()) != knotCount() - degree_ - 1) {
         knots_ = clampedKnotVector(degree_, static_cast<int>(points.size()));
     }
 }
