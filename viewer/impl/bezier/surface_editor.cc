@@ -46,8 +46,8 @@ void SurfaceEditor::render() {
 }
 
 void SurfaceEditor::renderControlPanel() {
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(330, 720), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(330, 520), ImGuiCond_Always);
 
     ImGui::Begin("Surface Control Panel", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
