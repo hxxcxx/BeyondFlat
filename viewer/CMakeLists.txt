@@ -39,12 +39,22 @@ set(SURFACE_HEADERS
     impl/bezier/surface_editor.h
 )
 
+# B-spline curve implementation
+set(BSPLINE_SOURCES
+    impl/bspline/curve_editor.cc
+)
+
+set(BSPLINE_HEADERS
+    impl/bspline/curve_editor.h
+)
+
 # Collect all sources
 set(ALL_SOURCES
     ${VIEWER_SOURCES}
     ${FRAMEWORK_SOURCES}
     ${BEZIER_SOURCES}
     ${SURFACE_SOURCES}
+    ${BSPLINE_SOURCES}
 )
 
 # Collect all headers
@@ -52,6 +62,7 @@ set(ALL_HEADERS
     ${FRAMEWORK_HEADERS}
     ${BEZIER_HEADERS}
     ${SURFACE_HEADERS}
+    ${BSPLINE_HEADERS}
 )
 
 # Create viewer executable
