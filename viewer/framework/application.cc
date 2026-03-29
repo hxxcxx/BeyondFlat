@@ -1,6 +1,7 @@
 #include "viewer/framework/application.h"
 #include "viewer/impl/bezier/curve_editor.h"
 #include "viewer/impl/bezier/surface_editor.h"
+#include "viewer/impl/bspline/curve_editor.h"
 #include <imgui.h>
 
 namespace cagd {
@@ -8,6 +9,7 @@ namespace cagd {
 Application::Application() {
     editors_.push_back(std::make_unique<BezierEditor>());
     editors_.push_back(std::make_unique<SurfaceEditor>());
+    editors_.push_back(std::make_unique<BSplineEditor>());
 }
 
 void Application::initialize() {
@@ -25,7 +27,7 @@ void Application::render() {
 
 void Application::renderEditorSelector() {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(330, 100), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 200), ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Editor Selector", nullptr, ImGuiWindowFlags_NoCollapse);
 

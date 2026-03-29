@@ -30,11 +30,21 @@ set(SURFACE_HEADERS
     bezier/bezier_surface.h
 )
 
+# B-spline curve sources
+set(BSPLINE_SOURCES
+    bspline/bspline_curve.cc
+)
+
+set(BSPLINE_HEADERS
+    bspline/bspline_curve.h
+)
+
 # Collect all sources
 set(CAGD_SOURCES
     ${COMMON_SOURCES}
     ${BEZIER_SOURCES}
     ${SURFACE_SOURCES}
+    ${BSPLINE_SOURCES}
 )
 
 # Collect all headers
@@ -42,6 +52,7 @@ set(CAGD_HEADERS
     ${COMMON_HEADERS}
     ${BEZIER_HEADERS}
     ${SURFACE_HEADERS}
+    ${BSPLINE_HEADERS}
 )
 
 # Create CAGD core library
