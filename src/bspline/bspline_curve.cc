@@ -1,7 +1,9 @@
+#define NOMINMAX
 #include "bspline_curve.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <windows.h>
 
 namespace cagd {
 
@@ -20,10 +22,13 @@ BSplineCurve2d::BSplineCurve2d(int degree, const PointVector2d& controlPoints,
 }
 
 void BSplineCurve2d::setControlPoints(const PointVector2d& points) {
+    int oldCount = static_cast<int>(control_points_.size());
     control_points_ = points;
+    int newCount = static_cast<int>(points.size());
     // Recompute knot vector if control point count changed
-    if (static_cast<int>(points.size()) != knotCount() - degree_ - 1) {
-        knots_ = clampedKnotVector(degree_, static_cast<int>(points.size()));
+    // For clamped B-spline: knotCount = controlPointCount + degree + 1
+    if (newCount + degree_ + 1 != knotCount()) {
+        knots_ = clampedKnotVector(degree_, newCount);
     }
 }
 
@@ -104,6 +109,14 @@ Point2d BSplineCurve2d::evaluate(double t) const {
 
     // Clamp t to domain
     auto [tmin, tmax] = domain();
+
+    // Debug logging for domain issues
+    if (t < tmin || t > tmax) {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "evaluate: t=%.3f clamped from [%.3f, %.3f]\n", t, tmin, tmax);
+        OutputDebugStringA(buf);
+    }
+
     t = std::max(tmin, std::min(tmax, t));
 
     // Handle clamped endpoint
@@ -111,7 +124,8 @@ Point2d BSplineCurve2d::evaluate(double t) const {
         return control_points_.back();
     }
 
-    return deBoor(t);
+    Point2d result = deBoor(t);
+    return result;
 }
 
 Point2d BSplineCurve2d::derivative(double t, int order) const {
@@ -221,7 +235,8 @@ BSplineCurve3d::BSplineCurve3d(int degree, const PointVector3d& controlPoints,
 void BSplineCurve3d::setControlPoints(const PointVector3d& points) {
     control_points_ = points;
     // Recompute knot vector if control point count changed
-    if (static_cast<int>(points.size()) != knotCount() - degree_ - 1) {
+    // For clamped B-spline: knotCount = controlPointCount + degree + 1
+    if (static_cast<int>(points.size()) + degree_ + 1 != knotCount()) {
         knots_ = clampedKnotVector(degree_, static_cast<int>(points.size()));
     }
 }
@@ -400,24 +415,27 @@ std::vector<double> uniformKnotVector(int degree, int controlPointCount) {
 }
 
 std::vector<double> clampedKnotVector(int degree, int controlPointCount) {
-    // Clamped (open) knot vector:
-    // First (degree+1) knots are 0, last (degree+1) knots are 1
-    // Middle knots are uniformly spaced
+    // Clamped (open) knot vector for B-spline with n+1 control points and degree p
+    // Total knots needed: n + p + 2 = (controlPointCount - 1) + degree + 2
+    // = controlPointCount + degree + 1
+    //
+    // Structure: [0 x (p+1)] [interior x (n-p)] [1 x (p+1)]
+    //            = (p+1) + (n-p) + (p+1) = n + p + 2
 
     int n = controlPointCount - 1;  // n + 1 control points
-    int numMiddleKnots = n - degree;  // Number of interior knots
+    int numInteriorKnots = n - degree;  // Number of interior knots
 
     std::vector<double> knots;
-    knots.reserve(controlPointCount + degree + 1);
+    knots.reserve(controlPointCount + degree + 1);  // n + p + 2
 
     // First (degree + 1) knots are 0
     for (int i = 0; i <= degree; ++i) {
         knots.push_back(0.0);
     }
 
-    // Middle knots are uniformly spaced between 0 and 1
-    for (int i = 1; i <= numMiddleKnots; ++i) {
-        double t = static_cast<double>(i) / (numMiddleKnots + 1);
+    // Interior knots are uniformly spaced between 0 and 1
+    for (int i = 1; i <= numInteriorKnots; ++i) {
+        double t = static_cast<double>(i) / (numInteriorKnots + 1);
         knots.push_back(t);
     }
 

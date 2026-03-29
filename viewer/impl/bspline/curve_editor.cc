@@ -1,7 +1,10 @@
+#define NOMINMAX
 #include "viewer/impl/bspline/curve_editor.h"
 #include <imgui.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <sstream>
+#include <windows.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -207,6 +210,21 @@ void BSplineEditor::renderCanvas(const ImVec2& canvasPos) {
     // Get control points
     PointVector2d points = curve_->controlPoints();
 
+    // Debug: log control points and knots
+    {
+        std::ostringstream oss;
+        const auto& knots = curve_->knots();
+        oss << "=== " << points.size() << " pts, deg " << curve_->degree() << ", " << knots.size() << " knots ===\n";
+        oss << "Knots: ";
+        for (size_t i = 0; i < knots.size(); ++i) oss << knots[i] << " ";
+        oss << "\n";
+        for (size_t i = 0; i < points.size(); ++i) {
+            oss << "P" << i << "(" << points[i].x() << "," << points[i].y() << ") ";
+        }
+        oss << "\n";
+        OutputDebugStringA(oss.str().c_str());
+    }
+
     // Convert control points to screen coordinates
     std::vector<ImVec2> screenPoints;
     for (const auto& pt : points) {
@@ -221,6 +239,17 @@ void BSplineEditor::renderCanvas(const ImVec2& canvasPos) {
             drawList->AddLine(screenPoints[i], screenPoints[i + 1],
                             IM_COL32(128, 128, 128, 128), 1.5f);
         }
+    }
+
+    // Debug: log first few curve evaluations
+    {
+        std::ostringstream oss;
+        oss << "Curve points at t=0, 0.25, 0.5, 0.75, 1:\n";
+        for (double t_val : {0.0, 0.25, 0.5, 0.75, 1.0}) {
+            Point2d p = curve_->evaluate(t_val);
+            oss << "  t=" << t_val << " -> (" << p.x() << ", " << p.y() << ")\n";
+        }
+        OutputDebugStringA(oss.str().c_str());
     }
 
     // Draw B-spline curve
@@ -338,13 +367,18 @@ void BSplineEditor::handleMouseButton(int button, int action, int, double xpos, 
             } else {
                 // Clicked on empty space, add new control point
                 Point2d worldPos = screenToWorld(xpos, ypos);
+                OutputDebugStringA(("BSplineEditor: Click at screen(" + std::to_string(xpos) + ", " + std::to_string(ypos) + ") -> world(" + std::to_string(worldPos.x()) + ", " + std::to_string(worldPos.y()) + ")\n").c_str());
 
                 PointVector2d points = curve_->controlPoints();
+                OutputDebugStringA(("BSplineEditor: Before add, control points count = " + std::to_string(points.size()) + "\n").c_str());
 
                 // Limit maximum number of control points
                 if (points.size() < 20) {
                     points.push_back(worldPos);
                     curve_->setControlPoints(points);
+
+                    OutputDebugStringA(("BSplineEditor: After add, control points count = " + std::to_string(curve_->controlPoints().size()) + "\n").c_str());
+                    OutputDebugStringA(("BSplineEditor: Knot count = " + std::to_string(curve_->knotCount()) + ", degree = " + std::to_string(curve_->degree()) + "\n").c_str());
 
                     // Select the newly added point
                     selectedControlPoint_ = static_cast<int>(points.size()) - 1;
