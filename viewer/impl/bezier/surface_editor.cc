@@ -218,9 +218,6 @@ void SurfaceEditor::renderScene() {
 
     GLRenderer& r = viewport_->renderer();
 
-    fprintf(stderr, "[DEBUG] renderScene: surface=%p, meshDirty=%d, showSurface=%d, showAxes=%d, showGrid=%d, showCP=%d\n",
-            (void*)surface_.get(), meshDirty_, showSurface_, showAxes_, showGrid_, showControlPoints_);
-
     // Rebuild mesh if dirty
     if (meshDirty_) {
         surfaceMesh_ = surface_->generateMesh(resolutionU_, resolutionV_);

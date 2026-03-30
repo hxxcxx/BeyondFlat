@@ -106,14 +106,6 @@ Point2d BSplineCurve2d::evaluate(double t) const {
 
     // Clamp t to domain
     auto [tmin, tmax] = domain();
-
-    // Debug logging for domain issues
-    if (t < tmin || t > tmax) {
-        char buf[256];
-        snprintf(buf, sizeof(buf), "evaluate: t=%.3f clamped from [%.3f, %.3f]\n", t, tmin, tmax);
-        OutputDebugStringA(buf);
-    }
-
     t = std::max(tmin, std::min(tmax, t));
 
     // Handle clamped endpoint

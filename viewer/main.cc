@@ -83,7 +83,6 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    std::cout << "OpenGL " << GLVersion.major << "." << GLVersion.minor << std::endl;
 
     // Setup callbacks
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
