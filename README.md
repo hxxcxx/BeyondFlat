@@ -7,62 +7,91 @@
 本项目旨在通过实践学习 CAGD 的核心概念，包括：
 
 - ✅ **贝塞尔曲线（Bezier Curves）** - 已实现
-- 🚧 **B 样条曲线（B-Spline Curves）** - 计划中
+- ✅ **B 样条曲线（B-Spline Curves）** - 已实现
 - 🚧 **NURBS 曲线** - 计划中
-- 🚧 **曲面（Surfaces）** - 计划中
+- ✅ **曲面（Surfaces）** - 部分实现
 
 ## 🎯 主要特性
 
 ### 已实现功能
 
-- **贝塞尔曲线（2D）**
+- **贝塞尔曲线（2D/3D）**
   - Bernstein 多项式求值
   - de Casteljau 算法
   - 导数计算
   - 交互式控制点编辑
   - 实时可视化
 
+- **B 样条曲线（2D）**
+  - de Boor 算法求值
+  - 导数计算
+  - 均匀节点向量
+  - 交互式控制点编辑
+
+- **贝塞尔曲面（3D）**
+  - 张量积 Bezier 曲面
+  - de Casteljau 算法
+  - 偏导数与法向量计算
+  - 网格生成与渲染
+
 - **可视化系统**
   - 基于 ImGui 的现代 UI
-  - 交互式画布
+  - 交互式画布（2D/3D）
   - 控制点拖拽
-  - 切线可视化
+  - 切线/法向量可视化
   - 参数调节滑块
+
+- **3D 渲染引擎**
+  - OpenGL 实现3D曲面渲染
+  - OrbitCamera 轨道相机控制
+  - 网格/线框/点渲染
+  - 坐标轴与网格绘制
 
 - **数学库**
   - 基于 Eigen 的线性代数支持
   - 2D/3D 向量运算
   - 坐标变换
+  - OpenGL 数学辅助函数
 
 ### 交互功能
 
 - 🖱️ **左键点击空白处** - 添加控制点
 - 🖱️ **左键拖动控制点** - 移动控制点
 - 🖱️ **右键点击控制点** - 删除控制点
-- 🎛️ **参数滑块** - 调节切线和曲线上的点
+- 🎛️ **参数滑块** - 调节切线、节点和曲线上的点
+- ⌨️ **键盘快捷键** - 节点插入等操作
 
 ## 📁 项目结构
 
 ```
 BeyondFlat/
 ├── src/                          # 数学库核心代码
-│   ├── bezier/                   # 贝塞尔曲线实现
-│   │   └── bezier_curve.cc/h
-│   ├── bspline/                  # B 样条（计划中）
+│   ├── bezier/                   # 贝塞尔曲线/曲面实现
+│   │   ├── bezier_curve.cc/h
+│   │   └── bezier_surface.cc/h
+│   ├── bspline/                  # B 样条曲线实现
+│   │   └── bspline_curve.cc/h
 │   ├── nurbs/                    # NURBS（计划中）
 │   └── common/                   # 通用工具
-│       └── common.cc/h
+│       ├── common.cc/h
+│       └── glmath.cc/h           # OpenGL 数学库
 │
 ├── viewer/                       # 可视化应用
 │   ├── main.cc                   # 程序入口
 │   ├── framework/                # 框架核心
 │   │   ├── application.cc/h      # 主应用程序
+│   │   ├── gl/                   # OpenGL 相关
+│   │   │   ├── camera.cc/h
+│   │   │   ├── renderer.cc/h
+│   │   │   └── viewport.cc/h
 │   │   └── base/
 │   │       └── curve_editor.h    # 曲线编辑器基类
 │   └── impl/                     # 具体实现
-│       └── bezier/               # 贝塞尔实现
-│           ├── curve_editor.cc/h
-│           └── curve_renderer.cc/h
+│       ├── bezier/               # 贝塞尔曲线/曲面编辑器
+│       │   ├── curve_editor.cc/h
+│       │   └── surface_editor.cc/h
+│       └── bspline/              # B 样条曲线编辑器
+│           └── curve_editor.cc/h
 │
 ├── .vscode/                      # VS Code 配置
 │   ├── launch.json               # 调试配置
@@ -153,10 +182,19 @@ cmake --build . --config Release
 
 ### 控制面板选项
 
+#### 曲线编辑器
 - **Show Control Points** - 显示控制点
 - **Show Control Polygon** - 显示控制多边形
 - **Show Tangent** - 显示切线
 - **Show Point on Curve** - 显示曲线上的点
+- **Show Knot Points** (B样条) - 显示节点向量对应的点
+
+#### 曲面编辑器
+- **Show Surface** - 显示曲面
+- **Show Control Points** - 显示控制点网格
+- **Show Axes** - 显示坐标轴
+- **Show Grid** - 显示网格
+- **U/V Resolution** - 曲面网格分辨率
 
 ### 鼠标操作
 
@@ -176,20 +214,26 @@ cmake --build . --config Release
 - **GUI 框架**: ImGui 1.92.6
 - **渲染**: OpenGL + ImGui DrawList
 
+## 📖 学习资料
+
+### NURBS 详解
+
+- [B站视频：NURBS详解](https://www.bilibili.com/video/BV1WN4y117aj/?share_source=copy_web&vd_source=6ebb0754dc3f18fc0e61fca680a38c61) - B样条与NURBS学习资料
+
 ## 🗺️ 开发路线图
 
 ### Phase 1: 基础曲线 ✅
-- [x] 贝塞尔曲线（2D）
+- [x] 贝塞尔曲线（2D/3D）
 - [x] 交互式编辑
 - [x] 可视化系统
 
-### Phase 2: 高级曲线（进行中）
-- [ ] B 样条曲线
+### Phase 2: 高级曲线 ✅
+- [x] B 样条曲线（2D）
 - [ ] NURBS 曲线
 - [ ] 曲线插值与拟合
 
-### Phase 3: 曲面（计划中）
-- [ ] 贝塞尔曲面
+### Phase 3: 曲面（进行中）
+- [x] 贝塞尔曲面
 - [ ] B 样条曲面
 - [ ] NURBS 曲面
 - [ ] 曲面修剪与拼接
