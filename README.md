@@ -8,7 +8,7 @@
 
 - ✅ **贝塞尔曲线（Bezier Curves）** - 已实现
 - ✅ **B 样条曲线（B-Spline Curves）** - 已实现
-- 🚧 **NURBS 曲线** - 计划中
+- ✅ **NURBS 曲线** - 已实现
 - ✅ **曲面（Surfaces）** - 部分实现
 
 ## 🎯 主要特性
@@ -27,6 +27,15 @@
   - 导数计算
   - 均匀节点向量
   - 交互式控制点编辑
+
+- **NURBS 曲线（2D/3D）**
+  - 齐次坐标 de Boor 算法
+  - 加权控制点与权重编辑
+  - 节点插入（Boehm 算法）
+  - 节点向量加密
+  - 预设圆锥曲线（圆、椭圆、圆弧）
+  - 宽高比保持的可视化
+  - 权重影响可视化
 
 - **贝塞尔曲面（3D）**
   - 张量积 Bezier 曲面
@@ -71,7 +80,8 @@ BeyondFlat/
 │   │   └── bezier_surface.cc/h
 │   ├── bspline/                  # B 样条曲线实现
 │   │   └── bspline_curve.cc/h
-│   ├── nurbs/                    # NURBS（计划中）
+│   ├── nurbs/                    # NURBS 曲线实现
+│   │   └── nurbs_curve.cc/h
 │   └── common/                   # 通用工具
 │       ├── common.cc/h
 │       └── glmath.cc/h           # OpenGL 数学库
@@ -91,6 +101,8 @@ BeyondFlat/
 │       │   ├── curve_editor.cc/h
 │       │   └── surface_editor.cc/h
 │       └── bspline/              # B 样条曲线编辑器
+│           └── curve_editor.cc/h
+│       └── nurbs/                # NURBS 曲线编辑器
 │           └── curve_editor.cc/h
 │
 ├── .vscode/                      # VS Code 配置
@@ -187,7 +199,13 @@ cmake --build . --config Release
 - **Show Control Polygon** - 显示控制多边形
 - **Show Tangent** - 显示切线
 - **Show Point on Curve** - 显示曲线上的点
-- **Show Knot Points** (B样条) - 显示节点向量对应的点
+- **Show Knot Points** (B样条/NURBS) - 显示节点向量对应的点
+- **Show Weight Influence** (NURBS) - 显示权重影响范围
+
+#### NURBS 专属功能
+- **Preset Curves** - 预设圆锥曲线（Circle / Ellipse / Arc）
+- **Weight Sliders** - 每个控制点的独立权重滑块 (0.01~5.0)
+- 控制点颜色随权重动态变化（蓝→绿→红）
 
 #### 曲面编辑器
 - **Show Surface** - 显示曲面
@@ -229,7 +247,7 @@ cmake --build . --config Release
 
 ### Phase 2: 高级曲线 ✅
 - [x] B 样条曲线（2D）
-- [ ] NURBS 曲线
+- [x] NURBS 曲线（2D/3D）
 - [ ] 曲线插值与拟合
 
 ### Phase 3: 曲面（进行中）
