@@ -39,12 +39,22 @@ set(BSPLINE_HEADERS
     bspline/bspline_curve.h
 )
 
+# NURBS curve sources
+set(NURBS_SOURCES
+    nurbs/nurbs_curve.cc
+)
+
+set(NURBS_HEADERS
+    nurbs/nurbs_curve.h
+)
+
 # Collect all sources
 set(CAGD_SOURCES
     ${COMMON_SOURCES}
     ${BEZIER_SOURCES}
     ${SURFACE_SOURCES}
     ${BSPLINE_SOURCES}
+    ${NURBS_SOURCES}
 )
 
 # Collect all headers
@@ -53,6 +63,7 @@ set(CAGD_HEADERS
     ${BEZIER_HEADERS}
     ${SURFACE_HEADERS}
     ${BSPLINE_HEADERS}
+    ${NURBS_HEADERS}
 )
 
 # Create CAGD core library

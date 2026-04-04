@@ -2,6 +2,7 @@
 #include "viewer/impl/bezier/curve_editor.h"
 #include "viewer/impl/bezier/surface_editor.h"
 #include "viewer/impl/bspline/curve_editor.h"
+#include "viewer/impl/nurbs/curve_editor.h"
 #include <imgui.h>
 
 namespace cagd {
@@ -10,6 +11,7 @@ Application::Application() {
     editors_.push_back(std::make_unique<BezierEditor>());
     editors_.push_back(std::make_unique<SurfaceEditor>());
     editors_.push_back(std::make_unique<BSplineEditor>());
+    editors_.push_back(std::make_unique<NURBSEditor>());
 }
 
 void Application::initialize() {
