@@ -33,10 +33,10 @@ NURBSEditor::NURBSEditor()
     screenWidth_ = 1280;
     screenHeight_ = 720;
 
-    worldMinX_ = -100;
-    worldMaxX_ = 100;
-    worldMinY_ = -100;
-    worldMaxY_ = 100;
+    worldMinX_ = -200;
+    worldMaxX_ = 200;
+    worldMinY_ = -200;
+    worldMaxY_ = 200;
 
     // Initialize with a quarter circle as default NURBS example
     createCircleExample();
@@ -54,7 +54,7 @@ void NURBSEditor::createCircleExample() {
     std::vector<double> weights;
     std::vector<double> knots;
 
-    double r = 40.0; // radius in world units
+    double r = 80.0; // radius in world units
     double sq2 = std::sqrt(2.0) / 2.0;
 
     // Quarter circle 1: 0-90 degrees
@@ -91,8 +91,8 @@ void NURBSEditor::createEllipseExample() {
     std::vector<double> weights;
     std::vector<double> knots;
 
-    double a = 60.0; // semi-major axis
-    double b = 30.0; // semi-minor axis
+    double a = 120.0; // semi-major axis
+    double b = 60.0; // semi-minor axis
     double sq2 = std::sqrt(2.0) / 2.0;
 
     // Ellipse using NURBS (similar to circle but with different radii)
@@ -121,7 +121,7 @@ void NURBSEditor::createArcExample() {
     PointVector2d controlPoints;
     std::vector<double> weights;
 
-    double r = 50.0;
+    double r = 100.0;
     double sq2 = std::sqrt(2.0) / 2.0;
 
     controlPoints.emplace_back(r, 0);
@@ -133,6 +133,40 @@ void NURBSEditor::createArcExample() {
     std::vector<double> knots = {0, 0, 0, 1, 1, 1};
 
     curve_ = std::make_unique<NURBSCurve2d>(degree_, controlPoints, weights, knots);
+}
+
+void NURBSEditor::updateAspectScale() {
+    // Adjust world bounds to preserve aspect ratio (uniform scale in both axes)
+    double worldW = worldMaxX_ - worldMinX_;
+    double worldH = worldMaxY_ - worldMinY_;
+    double aspectScreen = static_cast<double>(screenWidth_) / static_cast<double>(screenHeight_);
+    double aspectWorld = worldW / worldH;
+
+    double centerX = (worldMinX_ + worldMaxX_) / 2.0;
+    double centerY = (worldMinY_ + worldMaxY_) / 2.0;
+
+    if (aspectScreen > aspectWorld) {
+        // Screen is wider — expand world X range
+        double newWorldW = worldH * aspectScreen;
+        worldMinX_ = centerX - newWorldW / 2.0;
+        worldMaxX_ = centerX + newWorldW / 2.0;
+    } else {
+        // Screen is taller — expand world Y range
+        double newWorldH = worldW / aspectScreen;
+        worldMinY_ = centerY - newWorldH / 2.0;
+        worldMaxY_ = centerY + newWorldH / 2.0;
+    }
+}
+
+void NURBSEditor::worldToScreenAR(const Point2d& world, float& screenX, float& screenY) {
+    screenX = static_cast<float>((world.x() - worldMinX_) / (worldMaxX_ - worldMinX_) * screenWidth_);
+    screenY = static_cast<float>((world.y() - worldMinY_) / (worldMaxY_ - worldMinY_) * screenHeight_);
+}
+
+Point2d NURBSEditor::screenToWorldAR(double screenX, double screenY) {
+    double worldX = worldMinX_ + (screenX / screenWidth_) * (worldMaxX_ - worldMinX_);
+    double worldY = worldMinY_ + (screenY / screenHeight_) * (worldMaxY_ - worldMinY_);
+    return Point2d(worldX, worldY);
 }
 
 void NURBSEditor::render() {
@@ -151,6 +185,7 @@ void NURBSEditor::render() {
     ImVec2 canvasSize = ImGui::GetContentRegionAvail();
 
     setScreenSize(static_cast<int>(canvasSize.x), static_cast<int>(canvasSize.y));
+    updateAspectScale();
 
     ImGui::InvisibleButton("Canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
 
@@ -349,7 +384,7 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
     std::vector<ImVec2> screenPoints;
     for (const auto& pt : points) {
         float sx, sy;
-        worldToScreen(pt, sx, sy);
+        worldToScreenAR(pt, sx, sy);
         screenPoints.push_back(ImVec2(canvasPos.x + sx, canvasPos.y + sy));
     }
 
@@ -380,8 +415,8 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
         Point2d p2 = curve_->evaluate(t2);
 
         float sx1, sy1, sx2, sy2;
-        worldToScreen(p1, sx1, sy1);
-        worldToScreen(p2, sx2, sy2);
+        worldToScreenAR(p1, sx1, sy1);
+        worldToScreenAR(p2, sx2, sy2);
 
         drawList->AddLine(
             ImVec2(canvasPos.x + sx1, canvasPos.y + sy1),
@@ -397,7 +432,7 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
             double t = knots[i];
             Point2d knotPt = curve_->evaluate(t);
             float kx, ky;
-            worldToScreen(knotPt, kx, ky);
+            worldToScreenAR(knotPt, kx, ky);
 
             drawList->AddCircleFilled(
                 ImVec2(canvasPos.x + kx, canvasPos.y + ky),
@@ -441,13 +476,13 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
         double tangentLength = 30.0;
 
         float tx, ty;
-        worldToScreen(tangentPoint, tx, ty);
+        worldToScreenAR(tangentPoint, tx, ty);
 
         double norm = tangentDir.norm();
         if (norm > 1e-6) {
             Point2d tangentEnd = tangentPoint + (tangentDir / norm) * tangentLength;
             float ex, ey;
-            worldToScreen(tangentEnd, ex, ey);
+            worldToScreenAR(tangentEnd, ex, ey);
 
             drawList->AddLine(
                 ImVec2(canvasPos.x + tx, canvasPos.y + ty),
@@ -461,7 +496,7 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
     if (showPointOnCurve_) {
         Point2d pt = curve_->evaluate(pointOnCurveParam_);
         float px, py;
-        worldToScreen(pt, px, py);
+        worldToScreenAR(pt, px, py);
 
         drawList->AddCircleFilled(
             ImVec2(canvasPos.x + px, canvasPos.y + py),
@@ -473,7 +508,7 @@ void NURBSEditor::renderCanvas(const ImVec2& canvasPos) {
     if (showKnotInsertPoint_) {
         Point2d pt = curve_->evaluate(knotInsertParam_);
         float px, py;
-        worldToScreen(pt, px, py);
+        worldToScreenAR(pt, px, py);
 
         drawList->AddCircleFilled(
             ImVec2(canvasPos.x + px, canvasPos.y + py),
@@ -495,7 +530,7 @@ void NURBSEditor::handleMouseButton(int button, int action, int, double xpos, do
                 isDragging_ = true;
             } else {
                 // Add new control point with default weight 1.0
-                Point2d worldPos = screenToWorld(xpos, ypos);
+                Point2d worldPos = screenToWorldAR(xpos, ypos);
 
                 PointVector2d points = curve_->controlPoints();
                 std::vector<double> weights = curve_->weights();
@@ -536,7 +571,7 @@ void NURBSEditor::handleMouseButton(int button, int action, int, double xpos, do
 
 void NURBSEditor::handleMousePosition(double xpos, double ypos) {
     if (isDragging_ && selectedControlPoint_ >= 0) {
-        Point2d worldPos = screenToWorld(xpos, ypos);
+        Point2d worldPos = screenToWorldAR(xpos, ypos);
         PointVector2d points = curve_->controlPoints();
         points[selectedControlPoint_] = worldPos;
         curve_->setControlPoints(points);
@@ -549,7 +584,7 @@ int NURBSEditor::findControlPoint(double mouseX, double mouseY) {
 
     for (size_t i = 0; i < points.size(); ++i) {
         float sx, sy;
-        worldToScreen(points[i], sx, sy);
+        worldToScreenAR(points[i], sx, sy);
 
         double dx = mouseX - sx;
         double dy = mouseY - sy;

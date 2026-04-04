@@ -50,6 +50,11 @@ private:
     // Create an arc example
     void createArcExample();
 
+    // Aspect-ratio-preserving coordinate transforms
+    void updateAspectScale();
+    void worldToScreenAR(const Point2d& world, float& screenX, float& screenY);
+    Point2d screenToWorldAR(double screenX, double screenY);
+
     // Current NURBS curve
     std::unique_ptr<NURBSCurve2d> curve_;
 
